@@ -54,10 +54,21 @@ class WPUnitCommand extends WP_CLI_Command {
 			require_once($file);
 		}
 		
-		if( $test == 'all' || $test == null )
+		if( $test == null ) {
 			$this->testCases = wptest_get_all_test_cases();
-		else
-			$this->testCases = array( $test );
+		} else {
+			
+			if( strpos( $test, '*' ) ) {
+			
+				foreach( wptest_get_all_test_cases() as $_test )
+					if( preg_match( '/' . str_replace( '*', '([.]*?)', $test ) . '/', $_test ) )
+						$this->testCases[] = $_test;
+			
+			} else {
+				
+				$this->testCases = array( $test );
+			}
+		}
 		
 		// run the tests and print the results
 		
@@ -150,28 +161,40 @@ endif;
 class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implements PHPUnit_Framework_TestListener {
 
 	var $failed_tests;
+	var $current_test_suite;
 	
     public function printResult(PHPUnit_Framework_TestResult $result) {}
     
     public function startTestSuite(PHPUnit_Framework_TestSuite $suite) {
     	$name = preg_replace( '(^.*::(.*?)$)', '\\1', $suite->getName() );
     	
+    	$this->current_test_suite = $name;
     	WP_CLI::line( '' );
     	WP_CLI::line( $name );
     }
 	
     public function addFailure(PHPUnit_Framework_Test $test, PHPUnit_Framework_AssertionFailedError $e, $time) {
     	
-    	$this->failed_tests[$test->getName()] = $e;
+    	$name = strpos( $test->getName(), '::' ) ? $test->getName() : $this->current_test_suite . '::' . $test->getName();
+    	$this->failed_tests[$name] = $e->toString();
     	
     }
+    
+    public function addError(PHPUnit_Framework_Test $test, Exception $e, $time) {
+    
+        $name = strpos( $test->getName(), '::' ) ? $test->getName() : $this->current_test_suite . '::' . $test->getName();
+        $this->failed_tests[$name] = 'Script Error: ' . $e->getMessage() . ' [file: ' . $e->getFile() . ' line: ' . $e->getLine() . ' backtrace: ' . $e->getTraceAsString() . ']';
+    
+    }
+
 	
     public function endTest(PHPUnit_Framework_Test $test, $time) {
        	
        	$name = preg_replace( '(^(.*)::(.*?)$)', '\\1', $test->getName() );
-       	
-		if( !empty( $this->failed_tests[$test->getName()] ) )
-       		WP_CLI::error( '  '.$name . ' ' . $this->failed_tests[$test->getName()]->toString() );
+       	$full_name = strpos( $test->getName(), '::' ) ? $test->getName() : $this->current_test_suite . '::' . $test->getName();
+
+		if( isset( $this->failed_tests[$full_name] ) )
+       		WP_CLI::error( '  '.$name . ' ' . $this->failed_tests[$full_name] );
        	
        	else
        		WP_CLI::success( $name );

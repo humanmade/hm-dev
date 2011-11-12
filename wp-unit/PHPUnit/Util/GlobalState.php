@@ -107,7 +107,7 @@ class PHPUnit_Util_GlobalState
             if ($key != 'GLOBALS' &&
                 !in_array($key, $superGlobalArrays) &&
                 !in_array($key, $blacklist)) {
-                self::$globals['GLOBALS'][$key] = serialize($GLOBALS[$key]);
+                //self::$globals['GLOBALS'][$key] = serialize($GLOBALS[$key]);
             }
         }
     }

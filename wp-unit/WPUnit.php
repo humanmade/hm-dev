@@ -119,7 +119,7 @@ function wptest_get_all_test_cases() {
 	$all_classes = get_declared_classes();
 	// only classes that extend WPTestCase and have names that don't start with _ are included
 	foreach ($all_classes as $class)
-		if ($class{0} != '_' and wptest_is_descendent('PHPUnit_Framework_TestCase', $class))
+		if ($class{0} != '_' and wptest_is_descendent('PHPUnit_Framework_TestCase', $class) && $class != 'WP_UnitTestCase' )
 			$test_classes[] = $class;
 	return $test_classes;
 }
@@ -396,6 +396,15 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 				$this->fail();
 			}
 		}
+	}
+	
+	function assertURLContains( $url, $pattern, $message ) {
+	
+		$r = wp_remote_request( $url, array( 'timeout' => 30 ) );
+		$body = wp_remote_retrieve_body( $r );
+		
+		
+		$this->assertContains( $pattern, $body, $message );	
 	}
 	
 	function assertDiscardWhitespace( $expected, $actual ) {
