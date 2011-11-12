@@ -15,13 +15,18 @@ class HM_Time_Stack {
 	}
 	
 	function __construct() {
-		$this->start_time = hm_time_stack_time();
+		
+		global $hm_time_stack_start;
+		
+		if( !empty( $hm_time_stack_start ) )
+			$this->start_time = $hm_time_stack_start;
+		else
+			$this->start_time = hm_time_stack_time();
 		
 		$this->stack = new HM_Time_Stack_Operation( 'wp' );
 		
 		$this->setup_hooks();
 	}
-	
 	
 	public function start_operation( $id, $label = '' ) {
 	
@@ -272,8 +277,8 @@ class HM_Time_Stack_Event extends HM_Time_Stack_Operation {
 }
 
 function hm_time_stack_time() {
-	$time = microtime();
-	$time = explode(' ', $time);
+
+	$time = explode( ' ', microtime() );
 	$time = $time[1] + $time[0];
 	return $time;
 }
