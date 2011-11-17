@@ -75,12 +75,11 @@ class HM_Time_Stack {
 		add_action( 'parse_query', function( $wp_query ) {
 			
 			$query = is_string( $wp_query->query ) ? $wp_query->query : json_encode( $wp_query->query );
-			HM_Time_Stack::instance()->start_operation( 'wp_query::' . spl_object_hash( $wp_query ), 'WP_Query - ' . $query );
-			
+			HM_Time_Stack::instance()->start_operation( 'wp_query::' . spl_object_hash( $wp_query ), 'WP_Query - ' . substr( $query, 0, 200 ) );
+			$wp_query->query_vars['suppress_filters'] = false;
 		}, 1 );
 		
 		add_action( 'the_posts', function( $posts, $wp_query ) {
-		
 			HM_Time_Stack::instance()->end_operation( 'wp_query::' . spl_object_hash( $wp_query ) );
 			return $posts;
 		}, 99, 2 );
@@ -89,7 +88,7 @@ class HM_Time_Stack {
 		
 			HM_Time_Stack::instance()->end_operation( 'wp' );
 			
-			HM_Time_Stack::instance()->printStack();
+			//HM_Time_Stack::instance()->printStack();
 		
 		}, 99 );
 		
@@ -108,14 +107,14 @@ class HM_Time_Stack {
 		add_action( 'loop_start', function( $wp_query ) {
 		
 			$query = is_string( $wp_query->query ) ? $wp_query->query : json_encode( $wp_query->query );
-			HM_Time_Stack::instance()->add_event( 'the_loop::' . spl_object_hash( $wp_query ), 'Loop Start - ' . $query );
+			HM_Time_Stack::instance()->add_event( 'the_loop::' . spl_object_hash( $wp_query ), 'Loop Start' );
 		
 		}, 1 );
 		
 		add_action( 'loop_end', function( $wp_query ) {
 		
 			$query = is_string( $wp_query->query ) ? $wp_query->query : json_encode( $wp_query->query );
-			HM_Time_Stack::instance()->add_event( 'the_loop::' . spl_object_hash( $wp_query ), 'Loop End - ' . $query );
+			HM_Time_Stack::instance()->add_event( 'the_loop::' . spl_object_hash( $wp_query ), 'Loop End' );
 		
 		}, 1 );
 		
@@ -148,6 +147,12 @@ class HM_Time_Stack_Operation {
 	public $is_open;
 	private $open_operation;
 	public $children;
+	public $peak_memory_usage;
+	public $start_memory_usage;
+	public $end_memory_usage;
+	public $start_query_count;
+	public $end_query_count;
+	public $query_count;
 
 	public function __construct( $id, $label = '' ) {
 	
@@ -156,12 +161,23 @@ class HM_Time_Stack_Operation {
 		$this->start_time = hm_time_stack_time();
 		$this->label = $label;
 		$this->is_open = true;
+		$this->start_memory_usage = memory_get_peak_usage();
+		
+		global $wpdb;
+		$this->start_query_count = $wpdb->num_queries;
+		
 	}
 	
 	public function end() {
 		$this->end_time = hm_time_stack_time();
+		$this->end_memory_usage = memory_get_peak_usage();
+		$this->peak_memory_usage = round( ( $this->end_memory_usage / $this->start_memory_usage ) / 1024 / 1024, 4 );
 		$this->duration = round( $this->end_time - $this->start_time, 4 );
 		$this->is_open = false;
+		
+		global $wpdb;
+		$this->end_query_count = $wpdb->num_queries;
+		$this->query_count = $this->end_query_count - $this->start_query_count;
 	}
 	
 	public function add_operation( $operation ) {
@@ -230,7 +246,10 @@ class HM_Time_Stack_Operation {
 		?>
 		<li class="operation">
 			<span class="title">
-				operation: <strong><?php echo $this->label ? $this->label : $this->id ?></strong> <span class="duration"><?php echo $this->duration ?></span>
+				operation: <strong><?php echo $this->label ? $this->label : $this->id ?></strong> 
+				<span class="querie-count"><?php echo $this->query_count ?> Queries</span>
+				<span class="memory-usage"><?php echo $this->peak_memory_usage ?>MB</span> 
+				<span class="duration"><?php echo $this->duration ?></span>
 			</span>
 
 			<?php if ( $this->is_open ) : ?>
@@ -259,16 +278,21 @@ class HM_Time_Stack_Event extends HM_Time_Stack_Operation {
 	function __construct( $id, $label = '' ) {
 		
 		$this->id = $id;
-		$this->time = round( hm_time_stack_time() - HM_Time_Stack::instance()->get_start_time(), 4 );
+		$this->time = round( hm_time_stack_time() - HM_Time_Stack::instance()->get_start_time(), 3 );
 		$this->children = array();
 		$this->label = $label;
+		$this->peak_memory_usage = round( memory_get_peak_usage() / 1024 / 1024, 3 );
 	}
 	
 	function _print() {
 	
 		?>
 		<li class="event">
-			<?php echo $this->label ? $this->label : $this->id ?><span class="duration"><?php echo $this->time ?> in
+			<?php echo $this->label ? $this->label : $this->id ?>
+			
+			<span class="memory-usage"><?php echo $this->peak_memory_usage ?>MB</span> 
+			
+			<span class="duration"><?php echo $this->time ?> in
 		</li>
 		<?php
 	
@@ -284,3 +308,11 @@ function hm_time_stack_time() {
 }
 
 HM_Time_Stack::instance();
+
+
+add_action('debug_bar_panels', 'hm_time_stack_debug_bar_panel');
+function hm_time_stack_debug_bar_panel( $panels ) {
+	require_once dirname( __FILE__ ) . '/hm-dev.time-stack.debug-panel.php';
+	$panels[] = new Debug_Bar_Time_Stack();
+	return $panels;
+}
