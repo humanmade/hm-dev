@@ -196,3 +196,62 @@ wpDebugBar = api = {
 $(document).ready( wpDebugBar.init );
 
 })(jQuery);
+
+jQuery( document ).ready( function( $ ) {
+	
+	$( '#debug-bar-php ol.debug-bar-php-list li a' ).click( function() {
+	
+		ignored = JSON.parse( readCookie( 'debug-bar-ignored-notices' ) );
+		
+		if ( ignored == null ) {
+			ignored = Array();
+		}
+		
+		key = $( this ).parent().attr( 'data-key' ).replace( 'key_', '' );
+
+		if ( $.inArray( key, ignored ) == -1 ) {
+			ignored.push( key );
+		}
+		
+		$( '#debug-bar-php h2:nth-child(2) strong' ).text( Number( $( '#debug-bar-php h2:nth-child(2) strong' ).text() ) - 1 );
+		$( '#debug-bar-php h2:nth-child(3) strong' ).text( Number( $( '#debug-bar-php h2:nth-child(3) strong' ).text() ) + 1 );
+				
+		eraseCookie( 'debug-bar-ignored-notices' );
+
+		createCookie( 'debug-bar-ignored-notices', JSON.stringify( ignored ), 324 );
+		
+		$( this ).parent().remove();
+		
+	} );
+	
+	$( '.reset-ignored' ).click( function() {
+		eraseCookie( 'debug-bar-ignored-notices' );
+		window.location.reload;
+	} );
+	
+} );
+
+function createCookie(name,value,days) {
+	if (days) {
+		var date = new Date();
+		date.setTime(date.getTime()+(days*24*60*60*1000));
+		var expires = "; expires="+date.toGMTString();
+	}
+	else var expires = "";
+	document.cookie = name+"="+value+expires+"; path=/";
+}
+
+function readCookie(name) {
+	var nameEQ = name + "=";
+	var ca = document.cookie.split(';');
+	for(var i=0;i < ca.length;i++) {
+		var c = ca[i];
+		while (c.charAt(0)==' ') c = c.substring(1,c.length);
+		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+	}
+	return null;
+}
+
+function eraseCookie(name) {
+	createCookie(name,"",-1);
+}

@@ -276,6 +276,18 @@
 	margin: 0 0 10px 0;
 }
 
+#debug-bar-php ol.debug-bar-php-list li a {
+	float: right;
+}
+
+#debug-bar-php .reset-ignored {
+	display:block;
+	float:left;
+	clear:both;
+	color:#666 !important;
+	margin-bottom:10px;
+}
+
 #debug-bar-php .debug-bar-php-warning {
 	background-color: #ffebe8;
 	border: 1px solid #c00;
