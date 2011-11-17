@@ -1,10 +1,38 @@
 <?php
 
-class HM_Time_Stack {
+/**
+ * Register the debug panel
+ * 
+ * @param array $panels
+ * @return array
+ */
+function debug_bar_time_stack_panel( $panels ) {
+	$panels[] = new HM_Time_Stack();
+	return $panels;
+}
+add_action( 'debug_bar_panels', 'debug_bar_time_stack_panel' );
+
+require_once( HM_DEV_PATH . 'debug-bar/panels/class-debug-bar-panel.php' ); 
+
+class HM_Time_Stack extends Debug_Bar_Panel {
 
 	private static $instance;
 	private $stack;
 	private $start_time;
+	
+	function prerender() {
+		$this->set_visible( true );
+	}
+	
+	/**
+	 * Render the contents of the panel
+	 * 
+	 * @access public
+	 * @return null
+	 */
+	function render() {
+		HM_Time_Stack::instance()->printStack();
+	}
 	
 	public static function instance() {
 	
@@ -17,6 +45,9 @@ class HM_Time_Stack {
 	function __construct() {
 		
 		global $hm_time_stack_start;
+		
+		// Set the title of the debug bar panel
+		$this->title( 'Time Stack' );
 		
 		if( !empty( $hm_time_stack_start ) )
 			$this->start_time = $hm_time_stack_start;
@@ -88,8 +119,6 @@ class HM_Time_Stack {
 		add_action( 'wp_footer', function() {
 		
 			HM_Time_Stack::instance()->end_operation( 'wp' );
-			
-			HM_Time_Stack::instance()->printStack();
 		
 		}, 99 );
 		
@@ -282,5 +311,3 @@ function hm_time_stack_time() {
 	$time = $time[1] + $time[0];
 	return $time;
 }
-
-HM_Time_Stack::instance();
