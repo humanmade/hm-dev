@@ -398,6 +398,84 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		}
 	}
 	
+	/**
+	 * Assert that a zip archive contains the array
+	 * of filenames
+	 * 
+	 * @access public
+	 * @param string path to zip file
+	 * @param array of filenames to check for
+	 * @return null
+	 */
+	function assertArchiveContains( $zip_file, $filenames ) {
+
+		require_once( ABSPATH . 'wp-admin/includes/class-pclzip.php' );
+
+		$archive = new PclZip( $zip_file );
+
+		$extracted = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING );
+		
+		$files = array();
+
+		foreach( $extracted as $fileInfo )
+			$files[] = $fileInfo['filename'];
+
+		foreach( $filenames as $filename )
+			$this->assertContains( $filename, $files );
+
+	}
+	
+	/**
+	 * Assert that a zip archive doesn't contain any of the files
+	 * in the array of filenames
+	 * 
+	 * @access public
+	 * @param string path to zip file
+	 * @param array of filenames to check for
+	 * @return null
+	 */
+	function assertArchiveNotContains( $zip_file, $filenames ) {
+
+		require_once( ABSPATH . 'wp-admin/includes/class-pclzip.php' );
+
+		$archive = new PclZip( $zip_file );
+
+		$extracted = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING );
+		
+		$files = array();
+
+		foreach( $extracted as $fileInfo )
+			$files[] = $fileInfo['filename'];
+
+		foreach( $filenames as $filename )
+			$this->assertNotContains( $filename, $files );
+
+	}
+	
+	/**
+	 * Assert that a zip archive contains the 
+	 * correct number of files
+	 * 
+	 * @access public
+	 * @param string path to zip file
+	 * @param int the number of files the archive should contain
+	 * @return null
+	 */
+	function assertArchiveFileCount( $zip_file, $file_count ) {
+
+		require_once( ABSPATH . 'wp-admin/includes/class-pclzip.php' );
+
+		$archive = new PclZip( $zip_file );
+
+		$extracted = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING );
+		
+		//if ( count( $extracted ) != $file_count )
+		//	var_dump( $extracted );
+
+		$this->assertEquals( count( $extracted ), $file_count );
+
+	}
+	
 	function assertURLContains( $url, $pattern, $message ) {
 	
 		$r = wp_remote_request( $url, array( 'timeout' => 30 ) );
