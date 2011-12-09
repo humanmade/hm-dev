@@ -476,7 +476,20 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 
 	}
 	
-	function assertURLContains( $url, $pattern, $message ) {
+	function assertURL( $url, $message = '' ) {
+	
+		$this->assertStringStartsWith( 'http', $url, $message );
+		
+	}
+	
+	function assertURLReponseCode( $url, $code, $message = '' ) {
+	
+		$r = wp_remote_request( $url, array( 'timeout' => 30 ) );
+		$r_code = wp_remote_retrieve_response_code( $r );
+		$this->assertEquals( $code, $r_code );
+	}
+	
+	function assertURLContains( $url, $pattern, $message = '' ) {
 	
 		$r = wp_remote_request( $url, array( 'timeout' => 30 ) );
 		$body = wp_remote_retrieve_body( $r );
