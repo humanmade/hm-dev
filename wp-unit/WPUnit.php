@@ -501,6 +501,20 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 	function assertDiscardWhitespace( $expected, $actual ) {
 		$this->assertEquals( preg_replace( '/\s*/', '', $expected ), preg_replace( '/\s*/', '', $actual ) );
 	}
+	
+	function assertImageColorAtPoint( $image_path, $point, $color ) {
+	
+	}
+	
+	function assertImageAlphaAtPoint( $image_path, $point, $alpha ) {
+		
+		$im = imagecreatefrompng( $image_path );
+		$rgb = imagecolorat($im, $point[0], $point[1]);
+
+		$colors = imagecolorsforindex($im, $rgb);
+		
+		$this->assertEquals( $colors['alpha'], $alpha );
+	}
 
 	function checkAtLeastPHPVersion( $version ) {
 		if ( version_compare( PHP_VERSION, $version, '<' ) ) {
