@@ -418,10 +418,10 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		$files = array();
 
 		foreach( $extracted as $fileInfo )
-			$files[] = $fileInfo['filename'];
+			$files[] = untrailingslashit( $fileInfo['filename'] );
 
 		foreach( $filenames as $filename )
-			$this->assertContains( $filename, $files );
+			$this->assertContains( untrailingslashit( $filename ), $files );
 
 	}
 	
