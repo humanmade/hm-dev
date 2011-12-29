@@ -54,11 +54,19 @@ class HM_Time_Stack {
 			.time-stack > li { color: #fff; padding: 0 !important; }
 			.time-stack > li > ul { padding: 0; color: #333; }
 			.time-stack ul { margin: 0; padding: 0 5px; list-style: none;  background: #fff; }
+			.time-stack ul ul { display: none; }
 			.time-stack ul li { padding: 3px; border-bottom: 1px solid #ddd; }
 			.time-stack .duration { float: right; color: #555; }
 			.time-stack .operation { padding: 5px 3px; background: rgba(192, 163, 67, .3); }
 			.time-stack .event { color: #666; }
 		</style>
+		<script>
+			jQuery( '.operation' ).live( 'click', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				jQuery( this ).find( '>ul' ).toggle();
+			} );
+		</script>
 		<ul class="time-stack">
 			<?php $this->stack->_print(); ?>
 		</ul>
@@ -67,7 +75,26 @@ class HM_Time_Stack {
 	}
 	
 	private function setup_hooks() {
-	
+		
+		// global adding from actions
+		add_action( 'start_operation', function( $id, $label = '' ) {
+		
+			HM_Time_Stack::instance()->start_operation( $id, $label );
+		
+		}, 10, 2 );
+		
+		add_action( 'end_operation', function( $id ) {
+		
+			HM_Time_Stack::instance()->end_operation( $id );
+		
+		}, 10, 1 );
+		
+		add_action( 'add_event', function( $id, $label = '' ) {
+		
+			HM_Time_Stack::instance()->add_event( $id, $label );
+		
+		}, 10, 1 );
+		
 		add_action( 'init', function() {
 			HM_Time_Stack::instance()->add_event( 'init' );
 		}, 1 );

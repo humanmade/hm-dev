@@ -476,7 +476,20 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 
 	}
 	
-	function assertURLContains( $url, $pattern, $message ) {
+	function assertURL( $url, $message = '' ) {
+	
+		$this->assertStringStartsWith( 'http', $url, $message );
+		
+	}
+	
+	function assertURLReponseCode( $url, $code, $message = '' ) {
+	
+		$r = wp_remote_request( $url, array( 'timeout' => 30 ) );
+		$r_code = wp_remote_retrieve_response_code( $r );
+		$this->assertEquals( $code, $r_code );
+	}
+	
+	function assertURLContains( $url, $pattern, $message = '' ) {
 	
 		$r = wp_remote_request( $url, array( 'timeout' => 30 ) );
 		$body = wp_remote_retrieve_body( $r );
@@ -487,6 +500,20 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 	
 	function assertDiscardWhitespace( $expected, $actual ) {
 		$this->assertEquals( preg_replace( '/\s*/', '', $expected ), preg_replace( '/\s*/', '', $actual ) );
+	}
+	
+	function assertImageColorAtPoint( $image_path, $point, $color ) {
+	
+	}
+	
+	function assertImageAlphaAtPoint( $image_path, $point, $alpha ) {
+		
+		$im = imagecreatefrompng( $image_path );
+		$rgb = imagecolorat($im, $point[0], $point[1]);
+
+		$colors = imagecolorsforindex($im, $rgb);
+		
+		$this->assertEquals( $colors['alpha'], $alpha );
 	}
 
 	function checkAtLeastPHPVersion( $version ) {
