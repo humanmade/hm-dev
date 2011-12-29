@@ -472,7 +472,7 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		//if ( count( $extracted ) != $file_count )
 		//	var_dump( $extracted );
 
-		$this->assertEquals( count( $extracted ), $file_count );
+		$this->assertEquals( count( array_filter( (array) $extracted ) ), $file_count );
 
 	}
 	
