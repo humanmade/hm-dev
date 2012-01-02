@@ -25,6 +25,8 @@ if( class_exists( 'WP_CLI_Command' ) ) :
 class WPUnitCommand extends WP_CLI_Command {
 	
 	var $testCases;
+	var $printer;
+	
 	public static function get_description() {
 		return 'Run unit tests using WP Unit.';
 	}
@@ -94,66 +96,21 @@ class WPUnitCommand extends WP_CLI_Command {
 		
 		require_once('PHPUnit/TextUI/ResultPrinter.php');
 		
-		$printer = new WPUnitCommandResultsPrinter();
-		$result->addListener($printer);
+		$this->printer = new WPUnitCommandResultsPrinter();
+		$result->addListener($this->printer);
 		
-		return array($suite->run($result), $printer);
+		return array($suite->run($result), $this->printer);
 	}
 	
 	private function _output_results( $result ) {
-		
-		$pass 				= $result->passed();
-		$number_of_tests 	= $result->count();
-		$detected_failures 	= $result->failureCount();
-		$failures			= $result->failures();
-		$incompleted_tests	= $result->notImplemented();
-		$skipped 			= $result->skipped();
-		$number_skipped		= $result->skippedCount();
-		$passedKeys 		= array_keys($pass);
-		$skippedKeys 		= array_keys($skipped);
-		$incompletedKeys 	= array_keys($incompleted_tests);
-		
-		$tests = array();
-		$_tests = array_merge( $passedKeys, $skippedKeys, $incompletedKeys );
-		
-		foreach ( $_tests as $_test )
-			$tests[ reset( explode( '::', $_test ) ) ][] = array( 'method' => end( explode( '::', $_test ) ), 'status' => 'OK' );
-		
-		foreach ( $failures as $failure ) {
-					
-			$failedTest = $failure->failedTest();
-						
-			if ($failedTest instanceof PHPUnit_Framework_SelfDescribing) 
-		    	$_test = $failedTest->toString();
-			
-			else 
-		    	$_test = get_class($failedTest);
-		    
-		    $tests[ reset( explode( '::', $_test ) ) ][] = array( 'method' => end( explode( '::', $_test ) ), 'status' => 'Failed', 'message' => $failure->getExceptionAsString() );
-
-		}
-		
-		$failed_count = 0;
-
-		foreach ( $tests as $test_case => $test_case_tests ) {
-			foreach ( $test_case_tests as $test_case_test ) {
-			
-				switch ( $test_case_test['status'] ) : 
-					case 'Failed' :
-						$failed_count++;
-						break;
-				endswitch;
-			
-			}
-		
-		}
-		
+				
 		WP_CLI::line( '' );
 		
-		if( $failed_count )
-			WP_CLI::warning( 'Ran ' . $number_of_tests . ' tests. ' . $failed_count . ' Failed.' );
-		else
-			WP_CLI::success( 'Ran ' . $number_of_tests . ' tests. ' . $failed_count . ' Failed.' );
+			WP_CLI::line( sprintf( 'Ran %d tests. %s Failed, %d Skipped, %d Passed', 
+				count( $this->printer->failed_tests ) + count( $this->printer->skipped_tests ) + count( $this->printer->passed_tests ),
+				count( $this->printer->failed_tests ),
+				count( $this->printer->skipped_tests ),
+				count( $this->printer->passed_tests ) ) );
 	}
 	
 }
@@ -300,11 +257,14 @@ EOB
 	
 }
 WP_CLI::addCommand( 'import', 'HMImportCommand' );
+
 endif;
 
 class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implements PHPUnit_Framework_TestListener {
 
 	var $failed_tests;
+	var $skipped_tests;
+	var $passed_tests;
 	var $current_test_suite;
 	
     public function printResult(PHPUnit_Framework_TestResult $result) {}
@@ -323,25 +283,60 @@ class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implement
     	$this->failed_tests[$name] = $e->toString();
     	
     }
-    
-    public function addError(PHPUnit_Framework_Test $test, Exception $e, $time) {
+	
+	public function addError(PHPUnit_Framework_Test $test, Exception $e, $time) {
     
         $name = strpos( $test->getName(), '::' ) ? $test->getName() : $this->current_test_suite . '::' . $test->getName();
         $this->failed_tests[$name] = 'Script Error: ' . $e->getMessage() . ' [file: ' . $e->getFile() . ' line: ' . $e->getLine() . ' backtrace: ' . $e->getTraceAsString() . ']';
     
     }
-
+    
+	public function addSkippedTest(PHPUnit_Framework_Test $test, Exception $e, $time) {
+	
+		$name = strpos( $test->getName(), '::' ) ? $test->getName() : $this->current_test_suite . '::' . $test->getName();
+        $this->skipped_tests[$name] = 'Skipped message: ' . $e->getMessage();
+    
+	
+	} 
 	
     public function endTest(PHPUnit_Framework_Test $test, $time) {
        	
        	$name = preg_replace( '(^(.*)::(.*?)$)', '\\1', $test->getName() );
        	$full_name = strpos( $test->getName(), '::' ) ? $test->getName() : $this->current_test_suite . '::' . $test->getName();
-
-		if( isset( $this->failed_tests[$full_name] ) )
-       		WP_CLI::warning( '  '.$name . ' ' . $this->failed_tests[$full_name] );
+				
+		if( isset( $this->failed_tests[$full_name] ) ) {
+       		$this->print_failed( $name . ' ' . $this->failed_tests[$full_name] );
        	
-       	else
-       		WP_CLI::success( $name );
+       	}
+       	elseif( isset( $this->skipped_tests[$full_name] ) ) {
+       		$this->print_skipped( $name . ' ' . $this->skipped_tests[$full_name] );
+       	}
+       	else {
+       		$this->print_passed( $name );
+       		$this->passed_tests[$name] = $name;
+       	}
     }
+    
+    
+    
+    private function print_passed( $message ) {
+    	
+    	\cli\line( '%GPassed: %n' . $message );
+    	
+    }
+    
+    private function print_failed( $message ) {
+    	
+    	\cli\line( '%RFailed: %n' . $message );
+    	
+    }
+    
+    private function print_skipped( $message ) {
+    	
+    	\cli\line( '%YSkipped: %n' . $message );
+    	
+    }
+    
+    
 
 }
