@@ -151,7 +151,7 @@ class WPUnitCommand extends WP_CLI_Command {
 		WP_CLI::line( '' );
 		
 		if( $failed_count )
-			WP_CLI::error( 'Ran ' . $number_of_tests . ' tests. ' . $failed_count . ' Failed.' );
+			WP_CLI::warning( 'Ran ' . $number_of_tests . ' tests. ' . $failed_count . ' Failed.' );
 		else
 			WP_CLI::success( 'Ran ' . $number_of_tests . ' tests. ' . $failed_count . ' Failed.' );
 	}
@@ -338,7 +338,7 @@ class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implement
        	$full_name = strpos( $test->getName(), '::' ) ? $test->getName() : $this->current_test_suite . '::' . $test->getName();
 
 		if( isset( $this->failed_tests[$full_name] ) )
-       		WP_CLI::error( '  '.$name . ' ' . $this->failed_tests[$full_name] );
+       		WP_CLI::warning( '  '.$name . ' ' . $this->failed_tests[$full_name] );
        	
        	else
        		WP_CLI::success( $name );
