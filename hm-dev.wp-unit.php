@@ -26,6 +26,8 @@ class WPUnitCommand extends WP_CLI_Command {
 
 	var $testCases;
 	
+	protected $default_subcommand = 'run';
+	
 	public static function get_description() {
 		return 'Run unit tests using WP Unit.';
 	}
