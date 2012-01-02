@@ -1,0 +1,3 @@
+[submodule "wp-unit"]
+	path = wp-unit
+	url = https://github.com/humanmade/wp-unit
