@@ -336,8 +336,6 @@ class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implement
        	}
     }
 
-
-
     private function print_passed( $message ) {
 
     	\cli\line( '%GPassed: %n' . $message );
@@ -355,7 +353,5 @@ class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implement
     	\cli\line( '%YSkipped: %n' . $message );
 
     }
-
-
 
 }
