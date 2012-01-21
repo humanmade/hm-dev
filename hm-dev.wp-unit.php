@@ -230,9 +230,11 @@ class HMImportCommand extends WP_CLI_Command {
 			return;
 		}
 
-		$exec = sprintf( "rsync -avz -e ssh %s@%s:%s %s --exclude \"cache\"", $args['ssh_user'], $args['ssh_host'], $args['remote_path'], $args['local_path'] );
+		$exec = sprintf( "rsync -avz -e ssh %s@%s:%s %s --exclude 'cache' --exclude '_wpremote_backups'", $args['ssh_user'], $args['ssh_host'], $args['remote_path'], $args['local_path'] );
 
 		WP_CLI::line( sprintf( 'Running rsync from %s:%s to %s', $args['ssh_host'], $args['remote_path'], $args['local_path'] ) );
+
+		WP_CLI::line( 'Command: ' . $exec );
 
 		$res = exec( $exec );
 
