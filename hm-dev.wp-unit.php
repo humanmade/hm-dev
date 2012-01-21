@@ -157,8 +157,8 @@ class HMImportCommand extends WP_CLI_Command {
 		
 		$args = wp_parse_args( $args, $defaults );
 		
-		$start_time - time();
 		
+		$start_time = time();
 		if ( $args['ssh_host'] ) {
 			
 			if ( ! in_array( $args['host'], array( '127.0.0.1', 'localhost' ) ) ) {
