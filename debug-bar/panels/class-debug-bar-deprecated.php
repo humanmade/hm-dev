@@ -95,6 +95,3 @@ class Debug_Bar_Deprecated extends Debug_Bar_Panel {
 		$this->deprecated_arguments[$file.':'.$line] = $message;
 	}
 }
-
-
-?>
