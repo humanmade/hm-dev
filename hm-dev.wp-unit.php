@@ -234,8 +234,6 @@ class HMImportCommand extends WP_CLI_Command {
 
 		WP_CLI::line( sprintf( 'Running rsync from %s:%s to %s', $args['ssh_host'], $args['remote_path'], $args['local_path'] ) );
 
-		WP_CLI::line( 'Command: ' . $exec );
-
 		$res = exec( $exec );
 
 		WP_CLI::line( $res );
