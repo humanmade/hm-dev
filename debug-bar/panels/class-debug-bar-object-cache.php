@@ -22,5 +22,3 @@ class Debug_Bar_Object_Cache extends Debug_Bar_Panel {
 		echo $out;
 	}
 }
-
-?>

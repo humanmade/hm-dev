@@ -4,7 +4,7 @@
  Plugin URI: http://wordpress.org/extend/plugins/debug-bar/
  Description: Adds a debug menu to the admin bar that shows query, cache, and other helpful debugging information.
  Author: wordpressdotorg
- Version: 0.7
+ Version: 0.8
  Author URI: http://wordpress.org/
  */
 
@@ -33,17 +33,19 @@ class Debug_Bar {
 		add_action( 'admin_bar_menu',               array( &$this, 'admin_bar_menu' ), 1000 );
 		add_action( 'wp_after_admin_bar_render',    array( &$this, 'render' ) );
 		add_action( 'wp_head',                      array( &$this, 'ensure_ajaxurl' ), 1 );
+		add_filter( 'body_class',                   array( &$this, 'body_class' ) );
+		add_filter( 'admin_body_class',             array( &$this, 'body_class' ) );
 
 		$this->requirements();
 		$this->enqueue();
 		$this->init_panels();
 	}
-	
+
 	/* Are we on the wp-login.php page?
 	 * We can get here while logged in and break the page as the admin bar isn't shown and otherthings the js relies on aren't available.
 	 */
 	function is_wp_login() {
-		return 'wp-login.php' == basename( $_SERVER['SCRIPT_NAME']);
+		return 'wp-login.php' == basename( $_SERVER['SCRIPT_NAME'] );
 	}
 
 	function init_ajax() {
@@ -55,17 +57,17 @@ class Debug_Bar {
 	}
 
 	function requirements() {
-		$recs = array( 'panel', 'php', 'queries', 'request', 'wp-query', 'object-cache', 'deprecated' );
+		$recs = array( 'panel', 'php', 'queries', 'request', 'wp-query', 'object-cache', 'deprecated', 'js' );
 		foreach ( $recs as $rec )
 			require_once "panels/class-debug-bar-$rec.php";
 	}
 
 	function enqueue() {
 		$suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '.dev' : '';
+		
+		wp_enqueue_style( 'debug-bar', plugins_url( "css/debug-bar$suffix.css", __FILE__ ), array(), '20111209' );
 
-		wp_enqueue_style( 'debug-bar', plugins_url( "css/debug-bar$suffix.css", __FILE__ ), array(), '20110316a' );
-		wp_enqueue_script( 'debug-bar-ui-dockable', plugins_url( "js/ui-dockable$suffix.js", __FILE__ ), array('jquery-ui-mouse'), '20110113', true );
-		wp_enqueue_script( 'debug-bar', plugins_url( "js/debug-bar$suffix.js", __FILE__ ), array('jquery', 'debug-bar-ui-dockable', 'utils'), '20110114', true );
+		wp_enqueue_script( 'debug-bar', plugins_url( "js/debug-bar$suffix.js", __FILE__ ), array( 'jquery' ), '20111209', true );
 
 		do_action('debug_bar_enqueue_scripts');
 	}
@@ -73,8 +75,8 @@ class Debug_Bar {
 	function init_panels() {
 		$classes = array(
 			'Debug_Bar_PHP',
-			'Debug_Bar_WP_Query',
 			'Debug_Bar_Queries',
+			'Debug_Bar_WP_Query',
 			'Debug_Bar_Deprecated',
 			'Debug_Bar_Request',
 			'Debug_Bar_Object_Cache',
@@ -85,26 +87,12 @@ class Debug_Bar {
 		}
 
 		$this->panels = apply_filters( 'debug_bar_panels', $this->panels );
-
-		foreach ( $this->panels as $panel_key => $panel ) {
-			if ( ! $panel->is_visible() )
-				unset( $this->panels[ $panel_key ] );
-		}
 	}
 
-	function ensure_ajaxurl() {
-		if ( is_admin() )
-			return;
-		$current_user = wp_get_current_user();
-		?>
+	function ensure_ajaxurl() { ?>
 		<script type="text/javascript">
 		//<![CDATA[
-		var userSettings = {
-				'url': '<?php echo SITECOOKIEPATH; ?>',
-				'uid': '<?php echo $current_user->ID; ?>',
-				'time':'<?php echo time() ?>'
-			},
-			ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
+		var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
 		//]]>
 		</script>
 		<?php
@@ -128,10 +116,41 @@ class Debug_Bar {
 
 		/* Add the main siteadmin menu item */
 		$wp_admin_bar->add_menu( array(
-			'id'    => 'debug-bar',
-			'title' => __('Debug', 'debug-bar'),
-			'meta'  => array( 'class' => $classes )
+			'id'     => 'debug-bar',
+			'parent' => 'top-secondary',
+			'title'  => apply_filters( 'debug_bar_title', __('Debug', 'debug-bar') ),
+			'meta'   => array( 'class' => $classes ),
 		) );
+
+		// @todo: Uncomment and finish me!
+		// foreach ( $this->panels as $panel_key => $panel ) {
+		// 	if ( ! $panel->is_visible() )
+		// 		continue;
+		//
+		// 	$panel_class = get_class( $panel );
+		//
+		// 	$wp_admin_bar->add_menu( array(
+		// 		'parent' => 'debug-bar',
+		// 		'id'     => "debug-bar-$panel_class",
+		// 		'title'  => $panel->title(),
+		// 	) );
+		// }
+	}
+
+	function body_class( $classes ) {
+		if ( is_array( $classes ) )
+			$classes[] = 'debug-bar-maximized';
+		else
+			$classes .= ' debug-bar-maximized ';
+
+		if ( isset( $_GET['debug-bar'] ) ) {
+			if ( is_array( $classes ) )
+				$classes[] = 'debug-bar-visible';
+			else
+				$classes .= ' debug-bar-visible ';
+		}
+
+		return $classes;
 	}
 
 	function render() {
@@ -149,41 +168,42 @@ class Debug_Bar {
 		?>
 	<div id='querylist'>
 
-	<div id='debug-bar-handle'></div>
-	<div id='debug-bar-menu'>
-		<div id='debug-bar-menu-right'>
+	<div id="debug-bar-actions">
+		<span class="maximize">+</span>
+		<span class="restore">&ndash;</span>
+		<span class="close">&times;</span>
+	</div>
+
+	<div id='debug-bar-info'>
 		<div id="debug-status">
 			<?php //@todo: Add a links to information about WP_DEBUG, PHP version, MySQL version, and Peak Memory.
 			$statuses = array();
-			if ( ! WP_DEBUG )
-				$statuses[] = array( 'warning', __('WP_DEBUG OFF', 'debug-bar'), '' );
-			$statuses[] = array( 'site', sprintf( __('Site #%d on %s', 'debug-bar'), $GLOBALS['blog_id'], php_uname( 'n' ) ), '' );
+			$statuses[] = array( 'site', php_uname( 'n' ), sprintf( __( '#%d', 'debug-bar' ), get_current_blog_id() ) );
 			$statuses[] = array( 'php', __('PHP', 'debug-bar'), phpversion() );
-			$statuses[] = array( 'db', __('DB', 'debug-bar'), $wpdb->db_version() );
-			$statuses[] = array( 'memory', __('Mem.', 'debug-bar'), sprintf( __('%s bytes', 'debug-bar'), number_format( $this->safe_memory_get_peak_usage() ) ) );
+			$db_title = empty( $wpdb->is_mysql ) ? __( 'DB', 'debug-bar' ) : 'MySQL';
+			$statuses[] = array( 'db', $db_title, $wpdb->db_version() );
+			$statuses[] = array( 'memory', __('Memory Usage', 'debug-bar'), sprintf( __('%s bytes', 'debug-bar'), number_format_i18n( $this->safe_memory_get_peak_usage() ) ) );
+
+			if ( ! WP_DEBUG )
+				$statuses[] = array( 'warning', __('Please Enable', 'debug-bar'), 'WP_DEBUG' );
 
 			$statuses = apply_filters( 'debug_bar_statuses', $statuses );
 
-			$status_html = array();
-			foreach ( $statuses as $status ) {
+			foreach ( $statuses as $status ):
 				list( $slug, $title, $data ) = $status;
 
-				$html = "<span id='debug-status-$slug' class='debug-status'>";
-				$html .= "<span class='debug-status-title'>$title</span>";
-				if ( ! empty( $data ) )
-					$html .= " <span class='debug-status-data'>$data</span>";
-				$html .= '</span>';
-				$status_html[] = $html;
-			}
-
-			echo implode( ' | ', $status_html );
+				?><div id='debug-status-<?php echo esc_attr( $slug ); ?>' class='debug-status'>
+					<div class='debug-status-title'><?php echo $title; ?></div>
+					<?php if ( ! empty( $data ) ): ?>
+						<div class='debug-status-data'><?php echo $data; ?></div>
+					<?php endif; ?>
+				</div><?php
+			endforeach;
 			?>
 		</div>
-		<div id="debug-bar-actions">
-			<span class="plus">+</span>
-			<span class="minus" style="display: none">&ndash;</span>
-		</div>
-		</div>
+	</div>
+
+	<div id='debug-bar-menu'>
 		<ul id="debug-menu-links">
 
 	<?php
@@ -229,5 +249,3 @@ class Debug_Bar {
 }
 
 $GLOBALS['debug_bar'] = new Debug_Bar();
-
-?>

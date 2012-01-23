@@ -45,5 +45,3 @@ class Debug_Bar_Panel {
 		return $classes;
 	}
 }
-
-?>

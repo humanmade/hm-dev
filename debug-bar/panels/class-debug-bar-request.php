@@ -49,5 +49,3 @@ class Debug_Bar_Request extends Debug_Bar_Panel {
 		echo '</div>';
 	}
 }
-
-?>

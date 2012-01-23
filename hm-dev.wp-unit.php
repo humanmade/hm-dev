@@ -157,7 +157,7 @@ class HMImportCommand extends WP_CLI_Command {
 		
 		$args = wp_parse_args( $args, $defaults );
 		
-		$start_time - time();
+		$start_time = time();
 		
 		if ( $args['ssh_host'] ) {
 			
@@ -230,7 +230,7 @@ class HMImportCommand extends WP_CLI_Command {
 			return;
 		}
 		
-		$exec = sprintf( "rsync -avz -e ssh %s@%s:%s %s", $args['ssh_user'], $args['ssh_host'], $args['remote_path'], $args['local_path'] );
+		$exec = sprintf( "rsync -avz -e ssh %s@%s:%s %s --exclude 'cache' --exclude '_wpremote_backups'", $args['ssh_user'], $args['ssh_host'], $args['remote_path'], $args['local_path'] );
 		
 		WP_CLI::line( sprintf( 'Running rsync from %s:%s to %s', $args['ssh_host'], $args['remote_path'], $args['local_path'] ) );
 		
@@ -314,7 +314,7 @@ class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implement
         $this->skipped_tests[$name] = 'Skipped message: ' . $e->getMessage();
     
 	
-	}
+	} 
 	
 	public function addIncompleteTest(PHPUnit_Framework_Test $test, Exception $e, $time) {
 	
@@ -327,7 +327,7 @@ class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implement
        	
        	$name = preg_replace( '(^(.*)::(.*?)$)', '\\1', $test->getName() );
        	$full_name = strpos( $test->getName(), '::' ) ? $test->getName() : $this->current_test_suite . '::' . $test->getName();
-						
+				
 		if( isset( $this->failed_tests[$full_name] ) ) {
        		$this->print_failed( $name . ' ' . $this->failed_tests[$full_name] );
        	
@@ -340,8 +340,6 @@ class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implement
        		$this->passed_tests[$name] = $name;
        	}
     }
-    
-    
     
     private function print_passed( $message ) {
     	
@@ -361,6 +359,4 @@ class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implement
     	
     }
     
-    
-
 }
