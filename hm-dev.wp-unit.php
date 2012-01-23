@@ -314,13 +314,20 @@ class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implement
         $this->skipped_tests[$name] = 'Skipped message: ' . $e->getMessage();
     
 	
+	}
+	
+	public function addIncompleteTest(PHPUnit_Framework_Test $test, Exception $e, $time) {
+	
+		$name = strpos( $test->getName(), '::' ) ? $test->getName() : $this->current_test_suite . '::' . $test->getName();
+        $this->skipped_tests[$name] = 'Skipped message: ' . $e->getMessage();
+	
 	} 
 	
     public function endTest(PHPUnit_Framework_Test $test, $time) {
        	
        	$name = preg_replace( '(^(.*)::(.*?)$)', '\\1', $test->getName() );
        	$full_name = strpos( $test->getName(), '::' ) ? $test->getName() : $this->current_test_suite . '::' . $test->getName();
-				
+						
 		if( isset( $this->failed_tests[$full_name] ) ) {
        		$this->print_failed( $name . ' ' . $this->failed_tests[$full_name] );
        	
