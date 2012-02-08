@@ -3,7 +3,7 @@
 class HM_Time_Stack {
 
 	private static $instance;
-	private $stack;
+	public $stack;
 	private $start_time;
 	
 	public static function instance() {
@@ -15,6 +15,9 @@ class HM_Time_Stack {
 	}
 	
 	function __construct() {
+	
+		if ( !empty( $_GET['action'] ) && $_GET['action'] == 'hm_display_stacks' )
+			return;
 		
 		global $hm_time_stack_start;
 		
@@ -22,10 +25,30 @@ class HM_Time_Stack {
 			$this->start_time = $hm_time_stack_start;
 		else
 			$this->start_time = hm_time_stack_time();
+
+		// store it in object cache for persistant logging
+		$t = $this;
+		add_action( 'shutdown', function() use ( $t ) {
+			$all_stacks = wp_cache_get( '_hm_all_stacks' );
+		
+			ob_start();
+			$t->printStack();
+			$stack = ob_get_contents();
+			ob_end_clean();
+			
+			$all_stacks[] = array( 'stack' => $stack, 'date' => time(), 'url' => $_SERVER['REQUEST_URI'] );
+
+			wp_cache_set( '_hm_all_stacks', $all_stacks );
+			
+		}, 11 );
 		
 		$this->stack = new HM_Time_Stack_Operation( 'wp' );
 		
 		$this->setup_hooks();
+	}
+	
+	public function get_id() {
+		return $_SERVER['REQUEST_URI'] . time();
 	}
 	
 	public function start_operation( $id, $label = '' ) {
@@ -36,7 +59,6 @@ class HM_Time_Stack {
 	}
 	
 	public function end_operation( $id ) {
-		
 		$this->stack->end_operation( $this->stack->get_child_operation_by_id( $id ) );	
 	}
 	
@@ -54,7 +76,6 @@ class HM_Time_Stack {
 			.time-stack > li { color: #fff; padding: 0 !important; }
 			.time-stack > li > ul { padding: 0; color: #333; }
 			.time-stack ul { margin: 0; padding: 0 5px; list-style: none;  background: #fff; }
-			.time-stack ul ul { display: none; }
 			.time-stack ul li { padding: 3px; border-bottom: 1px solid #ddd; }
 			.time-stack .duration { float: right; color: #555; }
 			.time-stack .operation { padding: 5px 3px; background: rgba(192, 163, 67, .3); }
@@ -83,11 +104,12 @@ class HM_Time_Stack {
 		
 		}, 10, 2 );
 		
-		add_action( 'end_operation', function( $id ) {
-		
+		add_action( 'end_operation', function( $id, $args = array() ) {
+			
+			HM_Time_Stack::instance()->stack->get_child_operation_by_id( $id )->vars = $args;
 			HM_Time_Stack::instance()->end_operation( $id );
 		
-		}, 10, 1 );
+		}, 10, 2 );
 		
 		add_action( 'add_event', function( $id, $label = '' ) {
 		
@@ -111,13 +133,13 @@ class HM_Time_Stack {
 			return $posts;
 		}, 99, 2 );
 		
-		add_action( 'wp_footer', function() {
+		add_action( 'shutdown', function() {
 		
 			HM_Time_Stack::instance()->end_operation( 'wp' );
 			
 			//HM_Time_Stack::instance()->printStack();
 		
-		}, 99 );
+		} );
 		
 		add_action( 'template_redirect', function() {
 		
@@ -156,6 +178,18 @@ class HM_Time_Stack {
 			HM_Time_Stack::instance()->add_event( 'wp_footer' );
 		
 		}, 1 );
+		
+		// hooks for remote rewuest, (but hacky)
+		add_filter( 'https_ssl_verify', function( $var ) {
+			
+			do_action( 'start_operation', 'Remote Request' );
+			return $var;
+			
+		} );
+		
+		add_action( 'http_api_debug', function( $response, $type, $class, $args, $url) {
+			do_action( 'end_operation', 'Remote Request', array( 'url' => $url ) );
+		}, 10, 5 );
 
 	}
 	
@@ -180,6 +214,7 @@ class HM_Time_Stack_Operation {
 	public $start_query_count;
 	public $end_query_count;
 	public $query_count;
+	public $vars;
 
 	public function __construct( $id, $label = '' ) {
 	
@@ -278,6 +313,11 @@ class HM_Time_Stack_Operation {
 				<span class="memory-usage"><?php echo $this->peak_memory_usage ?>MB</span> 
 				<span class="duration"><?php echo $this->duration ?></span>
 			</span>
+			
+			<?php if ( $this->vars ) : ?>
+				<?php print_r( $this->vars ) ?>		
+			<?php endif; ?>
+
 
 			<?php if ( $this->is_open ) : ?>
 				Warning: Not Ended;			
@@ -343,3 +383,34 @@ function hm_time_stack_debug_bar_panel( $panels ) {
 	$panels[] = new Debug_Bar_Time_Stack();
 	return $panels;
 }
+
+
+// show persistant stacks
+add_action( 'init', function() {
+
+	if ( $_GET['action'] == 'hm_display_stacks' ) {
+		
+		if ( $_GET['clear_stack'] ) {
+			wp_cache_set( '_hm_all_stacks', array() );
+			header( 'location:?action=hm_display_stacks' );
+			exit;
+		}
+			
+		
+		$stacks = array_reverse( wp_cache_get( '_hm_all_stacks' ) );
+		
+		?>
+		<a href="?action=hm_display_stacks&clear_stack=true">Clear Stack</a>
+		<?php	
+		foreach ( $stacks as $id => $stack ) : ?>
+		
+			<h4><?php echo $stack['url'] ?></h4>
+			<?php echo $stack['stack'] ?>
+		
+		<?php endforeach;
+		
+		exit;
+	
+	}
+
+} );
