@@ -228,6 +228,10 @@ class HM_Time_Stack_Operation {
 		global $wpdb;
 		$this->start_query_count = $wpdb->num_queries;
 		
+		if ( ! defined( 'SAVEQUERIES' ) )
+			define( 'SAVEQUERIES', true );
+		
+		$this->_start_query_log_count = count( $wpdb->queries );
 	}
 	
 	public function end() {
@@ -240,6 +244,7 @@ class HM_Time_Stack_Operation {
 		global $wpdb;
 		$this->end_query_count = $wpdb->num_queries;
 		$this->query_count = $this->end_query_count - $this->start_query_count;
+		$this->queries = array_splice( $wpdb->queries, $this->_start_query_log_count );
 	}
 	
 	public function add_operation( $operation ) {
@@ -304,12 +309,15 @@ class HM_Time_Stack_Operation {
 	}
 	
 	public function _print() {
-	
+		
+		$query_time = 0;
+		foreach ( $this->queries as $q )
+			$query_time += $q[1];
 		?>
 		<li class="operation">
 			<span class="title">
 				operation: <strong><?php echo $this->label ? $this->label : $this->id ?></strong> 
-				<span class="querie-count"><?php echo $this->query_count ?> Queries</span>
+				<span class="querie-count"><?php echo $this->query_count ?> Queries [<?php echo $query_time ?>]</span>
 				<span class="memory-usage"><?php echo $this->peak_memory_usage ?>MB</span> 
 				<span class="duration"><?php echo $this->duration ?></span>
 			</span>
