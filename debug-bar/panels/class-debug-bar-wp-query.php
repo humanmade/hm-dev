@@ -103,5 +103,3 @@ class Debug_Bar_WP_Query extends Debug_Bar_Panel {
 		echo '</div>';
 	}
 }
-
-?>

@@ -1,8 +1,8 @@
 === Debug Bar ===
-Contributors: wordpressdotorg, ryan, westi, koopersmith, duck_
+Contributors: wordpressdotorg, ryan, westi, koopersmith, duck_, mitchoyoshitaka
 Tags: debug
-Tested up to: 3.1
-Stable tag: 0.6
+Tested up to: 3.3
+Stable tag: 0.8
 Requires at least: 3.1
 
 Adds a debug menu to the admin bar that shows query, cache, and other helpful debugging information.
@@ -21,11 +21,21 @@ Add a PHP/MySQL console with the [Debug Bar Console plugin](http://wordpress.org
 
 == Upgrade Notice ==
 
+= 0.8 =
+WordPress 3.3 compatibility
+UI refresh
+Removed jQuery UI requirement
+Full screen by default
+New debug-bar query parameter to show on page load
+Removed display cookies
+JavaScript error tracking (disabled by default)
+
 = 0.7 =
 Made compatible with PHP < 5.2.0
 CSS Tweaks
 Load JavaScript in Footer
 Fixed display issues for WP_Query debug on CPT archives pages
+SQL/DB error tracking
 
 = 0.6 =
 Added maximize/restore button
@@ -64,6 +74,7 @@ Made compatible with PHP < 5.2.0
 CSS Tweaks
 Load JavaScript in Footer
 Fixed display issues for WP_Query debug on CPT archives pages
+SQL/DB error tracking
 
 = 0.6 =
 Added maximize/restore button
