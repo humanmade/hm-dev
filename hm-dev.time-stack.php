@@ -29,16 +29,22 @@ class HM_Time_Stack {
 		// store it in object cache for persistant logging
 		$t = $this;
 		add_action( 'shutdown', function() use ( $t ) {
-			$all_stacks = wp_cache_get( '_hm_all_stacks' );
-		
+			$all_stacks = json_decode( wp_cache_get( '_hm_all_stacks' ) );
+			
+			$all_stacks = array_reverse( (array) $all_stacks );
+			$all_stacks[] = array( 'stack' => $t->stack->archive(), 'date' => time(), 'url' => $_SERVER['REQUEST_URI'] );
+			$all_stacks = array_reverse( $all_stacks );
+			
+			wp_cache_set( '_hm_all_stacks', json_encode( $all_stacks ) );
+			
 			ob_start();
 			$t->printStack();
-			$stack = ob_get_contents();
-			ob_end_clean();
+			$stack = ob_get_clean();
 			
-			$all_stacks[] = array( 'stack' => $stack, 'date' => time(), 'url' => $_SERVER['REQUEST_URI'] );
-
-			wp_cache_set( '_hm_all_stacks', $all_stacks );
+			$html_stacks =  wp_cache_get( '_hm_html_stacks' );
+			$html_stacks[] = array( 'stack' => $stack, 'date' => time(), 'url' => $_SERVER['REQUEST_URI'] );
+			
+			wp_cache_set( '_hm_html_stacks', $html_stacks );
 			
 		}, 11 );
 		
@@ -244,7 +250,12 @@ class HM_Time_Stack_Operation {
 		global $wpdb;
 		$this->end_query_count = $wpdb->num_queries;
 		$this->query_count = $this->end_query_count - $this->start_query_count;
-		$this->queries = array_splice( $wpdb->queries, $this->_start_query_log_count );
+		
+		if ( $wpdb->queries )
+			$this->queries = array_splice( $wpdb->queries, $this->_start_query_log_count );
+		
+		else
+			$this->queries = array();
 	}
 	
 	public function add_operation( $operation ) {
@@ -306,6 +317,33 @@ class HM_Time_Stack_Operation {
 			$return = $this;		
 
 		return $return;	
+	}
+	
+	public function archive() {
+		
+		$archive = (object) array();
+		
+		$archive->type 			= __CLASS__;
+		$archive->queries 		= $this->queries;
+		$archive->query_time 	= $this->get_query_time();
+		$archive->is_open 		= $this->is_open;
+		$archive->duration 		= $this->duration;
+		$archive->memory_usage	= $this->peak_memory_usage;
+		$archive->label			= $this->label ? $this->label : $this->id;
+		$archive->vars			= $this->vars;
+		
+		foreach ( $this->children as $operation )
+			$archive->children[] = $operation->archive();
+		
+		return $archive;
+	}
+	
+	private function get_query_time() {
+	
+		$query_time = 0;
+		foreach ( (array) $this->queries as $q )
+			$query_time += $q[1];
+	
 	}
 	
 	public function _print() {
@@ -399,14 +437,14 @@ add_action( 'init', function() {
 	if ( $_GET['action'] == 'hm_display_stacks' ) {
 		
 		if ( $_GET['clear_stack'] ) {
-			wp_cache_set( '_hm_all_stacks', array() );
+			wp_cache_set( '_hm_html_stacks', array() );
 			header( 'location:?action=hm_display_stacks' );
 			exit;
 		}
 			
 		
-		$stacks = array_reverse( wp_cache_get( '_hm_all_stacks' ) );
-		
+		$stacks = array_reverse( wp_cache_get( '_hm_html_stacks' ) );
+
 		?>
 		<a href="?action=hm_display_stacks&clear_stack=true">Clear Stack</a>
 		<?php	
