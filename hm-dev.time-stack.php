@@ -36,14 +36,14 @@ class HM_Time_Stack {
 			$all_stacks = array_reverse( $all_stacks );
 			
 			wp_cache_set( '_hm_all_stacks', json_encode( $all_stacks ) );
-			
+		
 			ob_start();
 			$t->printStack();
 			$stack = ob_get_clean();
 			
 			$html_stacks =  wp_cache_get( '_hm_html_stacks' );
 			$html_stacks[] = array( 'stack' => $stack, 'date' => time(), 'url' => $_SERVER['REQUEST_URI'] );
-			
+
 			wp_cache_set( '_hm_html_stacks', $html_stacks );
 			
 		}, 11 );
@@ -130,7 +130,17 @@ class HM_Time_Stack {
 		add_action( 'parse_query', function( $wp_query ) {
 			
 			$query = is_string( $wp_query->query ) ? $wp_query->query : json_encode( $wp_query->query );
-			HM_Time_Stack::instance()->start_operation( 'wp_query::' . spl_object_hash( $wp_query ), 'WP_Query - ' . substr( $query, 0, 200 ) );
+			global $wp_the_query;
+			
+			if ( $wp_the_query == $wp_query ) {
+				$name = 'Main WP Query';
+			}
+			else {
+				$trace = debug_backtrace();
+				$name = $trace[6]['function'] . ' - ' . $trace[7]['file'] . '[' . $trace[7] . ']';
+			}
+			
+			HM_Time_Stack::instance()->start_operation( 'wp_query::' . spl_object_hash( $wp_query ), 'WP_Query - ' . $name );
 			$wp_query->query_vars['suppress_filters'] = false;
 		}, 1 );
 		
@@ -252,7 +262,7 @@ class HM_Time_Stack_Operation {
 		$this->query_count = $this->end_query_count - $this->start_query_count;
 		
 		if ( $wpdb->queries )
-			$this->queries = array_splice( $wpdb->queries, $this->_start_query_log_count );
+		$this->queries = array_splice( $wpdb->queries, $this->_start_query_log_count );
 		
 		else
 			$this->queries = array();
@@ -443,17 +453,16 @@ add_action( 'init', function() {
 		}
 			
 		
-		$stacks = array_reverse( wp_cache_get( '_hm_html_stacks' ) );
-
-		?>
-		<a href="?action=hm_display_stacks&clear_stack=true">Clear Stack</a>
-		<?php	
+		$stacks = array_reverse( wp_cache_get( '_hm_all_stacks' ) );
+		
 		foreach ( $stacks as $id => $stack ) : ?>
 		
 			<h4><?php echo $stack['url'] ?></h4>
 			<?php echo $stack['stack'] ?>
 		
 		<?php endforeach;
+		
+		wp_cache_set( '_hm_html_stacks', array() );
 		
 		exit;
 	
