@@ -124,7 +124,17 @@ class HM_Time_Stack {
 		add_action( 'parse_query', function( $wp_query ) {
 			
 			$query = is_string( $wp_query->query ) ? $wp_query->query : json_encode( $wp_query->query );
-			HM_Time_Stack::instance()->start_operation( 'wp_query::' . spl_object_hash( $wp_query ), 'WP_Query - ' . substr( $query, 0, 200 ) );
+			global $wp_the_query;
+			
+			if ( $wp_the_query == $wp_query ) {
+				$name = 'Main WP Query';
+			}
+			else {
+				$trace = debug_backtrace();
+				$name = $trace[6]['function'] . ' - ' . $trace[7]['file'] . '[' . $trace[7] . ']';
+			}
+			
+			HM_Time_Stack::instance()->start_operation( 'wp_query::' . spl_object_hash( $wp_query ), 'WP_Query - ' . $name );
 			$wp_query->query_vars['suppress_filters'] = false;
 		}, 1 );
 		
@@ -397,25 +407,17 @@ function hm_time_stack_debug_bar_panel( $panels ) {
 add_action( 'init', function() {
 
 	if ( $_GET['action'] == 'hm_display_stacks' ) {
-		
-		if ( $_GET['clear_stack'] ) {
-			wp_cache_set( '_hm_all_stacks', array() );
-			header( 'location:?action=hm_display_stacks' );
-			exit;
-		}
 			
-		
 		$stacks = array_reverse( wp_cache_get( '_hm_all_stacks' ) );
 		
-		?>
-		<a href="?action=hm_display_stacks&clear_stack=true">Clear Stack</a>
-		<?php	
 		foreach ( $stacks as $id => $stack ) : ?>
 		
 			<h4><?php echo $stack['url'] ?></h4>
 			<?php echo $stack['stack'] ?>
 		
 		<?php endforeach;
+		
+		wp_cache_set( '_hm_all_stacks', array() );
 		
 		exit;
 	
