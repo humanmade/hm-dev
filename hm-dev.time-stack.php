@@ -16,7 +16,7 @@ class HM_Time_Stack {
 	
 	function __construct() {
 	
-		if ( !empty( $_GET['action'] ) && $_GET['action'] == 'hm_display_stacks' )
+		if ( !empty( $_GET['action'] ) && ( $_GET['action'] == 'hm_display_stacks' || $_GET['action'] == 'hm_get_stacks' ) )
 			return;
 		
 		global $hm_time_stack_start;
@@ -333,7 +333,7 @@ class HM_Time_Stack_Operation {
 		
 		$archive = (object) array();
 		
-		$archive->type 			= __CLASS__;
+		$archive->type 			= get_class($this);
 		$archive->queries 		= $this->queries;
 		$archive->query_time 	= $this->get_query_time();
 		$archive->is_open 		= $this->is_open;
@@ -442,30 +442,32 @@ function hm_time_stack_debug_bar_panel( $panels ) {
 
 
 // show persistant stacks
-add_action( 'init', function() {
+if ( $_GET['action'] == 'hm_display_stacks' ) {
+    
+    if ( $_GET['clear_stack'] ) {
+    	wp_cache_set( '_hm_html_stacks', array() );
+    	header( 'location:?action=hm_display_stacks' );
+    	exit;
+    }
+    	
+    
+    $stacks = array_reverse( wp_cache_get( '_hm_html_stacks' ) );
+    
+    foreach ( $stacks as $id => $stack ) : ?>
+    
+    	<h4><?php echo $stack['url'] ?></h4>
+    	<?php echo $stack['stack'] ?>
+    
+    <?php endforeach;
+    
+    wp_cache_set( '_hm_html_stacks', array() );
+    
+    exit;
 
-	if ( $_GET['action'] == 'hm_display_stacks' ) {
-		
-		if ( $_GET['clear_stack'] ) {
-			wp_cache_set( '_hm_html_stacks', array() );
-			header( 'location:?action=hm_display_stacks' );
-			exit;
-		}
-			
-		
-		$stacks = array_reverse( wp_cache_get( '_hm_all_stacks' ) );
-		
-		foreach ( $stacks as $id => $stack ) : ?>
-		
-			<h4><?php echo $stack['url'] ?></h4>
-			<?php echo $stack['stack'] ?>
-		
-		<?php endforeach;
-		
-		wp_cache_set( '_hm_html_stacks', array() );
-		
-		exit;
-	
-	}
+} elseif ( $_GET['action'] == 'hm_get_stacks' ) {
+    
+    echo $_GET['jsoncallback'] . '('.json_encode(wp_cache_get( '_hm_all_stacks' )).')';
+    wp_cache_set( '_hm_all_stacks', '' );
+    exit;
+}
 
-} );
