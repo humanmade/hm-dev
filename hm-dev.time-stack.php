@@ -19,6 +19,9 @@ class HM_Time_Stack {
 		if ( !empty( $_GET['action'] ) && ( $_GET['action'] == 'hm_display_stacks' || $_GET['action'] == 'hm_get_stacks' ) )
 			return;
 		
+		if ( defined( 'HM_DEV_TIMESTACK_TRACK_COOKIE_ONLY' ) && HM_DEV_TIMESTACK_TRACK_COOKIE_ONLY == true && empty( $_COOKIE['track_timestack'] ) )
+			return;
+
 		global $hm_time_stack_start;
 		
 		if( !empty( $hm_time_stack_start ) )
@@ -419,6 +422,16 @@ class HM_Time_Stack_Event extends HM_Time_Stack_Operation {
 		</li>
 		<?php
 	
+	}
+
+	function archive() {
+
+		$archive = parent::archive();
+
+		unset( $archive->duration );
+		$archive->time = $this->time;
+
+		return $archive;
 	}
 
 }
