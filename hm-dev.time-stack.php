@@ -140,7 +140,11 @@ class HM_Time_Stack {
 			}
 			else {
 				$trace = debug_backtrace();
-				$name = $trace[6]['function'] . ' - ' . $trace[7]['file'] . '[' . $trace[7] . ']';
+
+				if ( isset( $trace[6]['function'] ) && isset( $trace[7]['file'] ) )
+					$name = $trace[6]['function'] . ' - ' . $trace[7]['file'] . '[' . $trace[7] . ']';
+				else
+					$name = 'WP_Query';
 			}
 			
 			HM_Time_Stack::instance()->start_operation( 'wp_query::' . spl_object_hash( $wp_query ), 'WP_Query - ' . $name );
@@ -337,7 +341,7 @@ class HM_Time_Stack_Operation {
 		$archive = (object) array();
 		
 		$archive->type 			= get_class($this);
-		$archive->queries 		= $this->queries;
+		$archive->queries 		= ! empty( $this->queries ) ? $this->queries : array();
 		$archive->query_time 	= $this->get_query_time();
 		$archive->is_open 		= $this->is_open;
 		$archive->duration 		= $this->duration;
@@ -354,16 +358,20 @@ class HM_Time_Stack_Operation {
 	private function get_query_time() {
 	
 		$query_time = 0;
-		foreach ( (array) $this->queries as $q )
-			$query_time += $q[1];
+
+		if ( !empty( $this->queries ) )
+			foreach ( (array) $this->queries as $q )
+				$query_time += $q[1];
 	
 	}
 	
 	public function _print() {
 		
 		$query_time = 0;
-		foreach ( $this->queries as $q )
-			$query_time += $q[1];
+
+		if ( !empty( $this->queries ) )
+			foreach ( (array) $this->queries as $q )
+				$query_time += $q[1];
 		?>
 		<li class="operation">
 			<span class="title">
@@ -455,7 +463,7 @@ function hm_time_stack_debug_bar_panel( $panels ) {
 
 
 // show persistant stacks
-if ( $_GET['action'] == 'hm_display_stacks' ) {
+if ( isset( $_GET['action'] ) && $_GET['action'] == 'hm_display_stacks' ) {
     
     if ( $_GET['clear_stack'] ) {
     	wp_cache_set( '_hm_html_stacks', array() );
@@ -477,7 +485,7 @@ if ( $_GET['action'] == 'hm_display_stacks' ) {
     
     exit;
 
-} elseif ( $_GET['action'] == 'hm_get_stacks' ) {
+} elseif ( isset( $_GET['action'] ) && $_GET['action'] == 'hm_get_stacks' ) {
     
     echo $_GET['jsoncallback'] . '('.json_encode(wp_cache_get( '_hm_all_stacks' )).')';
     wp_cache_set( '_hm_all_stacks', '' );
