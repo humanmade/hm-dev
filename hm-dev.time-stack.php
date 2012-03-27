@@ -34,8 +34,14 @@ class HM_Time_Stack {
 		add_action( 'shutdown', function() use ( $t ) {
 			$all_stacks = json_decode( wp_cache_get( '_hm_all_stacks' ) );
 			
+			if ( is_user_logged_in() )
+				$user = wp_get_current_user()->display_name;
+
+			else
+				$user = 'Anonymouse';
+
 			$all_stacks = array_reverse( (array) $all_stacks );
-			$all_stacks[] = array( 'stack' => $t->stack->archive(), 'date' => time(), 'url' => $_SERVER['REQUEST_URI'] );
+			$all_stacks[] = array( 'stack' => $t->stack->archive(), 'date' => time(), 'url' => $_SERVER['REQUEST_URI'], 'user' => $user );
 			$all_stacks = array_reverse( $all_stacks );
 			
 			wp_cache_set( '_hm_all_stacks', json_encode( $all_stacks ) );
@@ -45,7 +51,8 @@ class HM_Time_Stack {
 			$stack = ob_get_clean();
 			
 			$html_stacks =  wp_cache_get( '_hm_html_stacks' );
-			$html_stacks[] = array( 'stack' => $stack, 'date' => time(), 'url' => $_SERVER['REQUEST_URI'] );
+
+			$html_stacks[] = array( 'stack' => $stack, 'date' => time(), 'url' => $_SERVER['REQUEST_URI'], 'user' => $user );
 
 			wp_cache_set( '_hm_html_stacks', $html_stacks );
 			
