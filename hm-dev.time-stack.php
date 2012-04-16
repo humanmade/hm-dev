@@ -59,6 +59,7 @@ class HM_Time_Stack {
 		}, 11 );
 		
 		$this->stack = new HM_Time_Stack_Operation( 'wp' );
+		$this->stack->start_time = $this->start_time;
 		
 		$this->setup_hooks();
 	}
@@ -112,7 +113,7 @@ class HM_Time_Stack {
 	}
 	
 	private function setup_hooks() {
-		
+
 		// global adding from actions
 		add_action( 'start_operation', function( $id, $label = '' ) {
 		
@@ -145,16 +146,24 @@ class HM_Time_Stack {
 			if ( $wp_the_query == $wp_query ) {
 				$name = 'Main WP Query';
 			}
+
 			else {
 				$trace = debug_backtrace();
 
 				if ( isset( $trace[6]['function'] ) && isset( $trace[7]['file'] ) )
-					$name = $trace[6]['function'] . ' - ' . $trace[7]['file'] . '[' . $trace[7] . ']';
+					$name = $trace[6]['function'] . ' - ' . $trace[7]['file'] . '[' . $trace[7]['line'] . ']';
 				else
 					$name = 'WP_Query';
 			}
 			
 			HM_Time_Stack::instance()->start_operation( 'wp_query::' . spl_object_hash( $wp_query ), 'WP_Query - ' . $name );
+
+			ob_start();
+			debug_print_backtrace();
+			$trace = ob_get_clean();
+
+			do_action( 'add_event', $trace );
+
 			$wp_query->query_vars['suppress_filters'] = false;
 		}, 1 );
 		
@@ -164,7 +173,9 @@ class HM_Time_Stack {
 		}, 99, 2 );
 		
 		add_action( 'shutdown', function() {
-		
+			
+			HM_Time_Stack::instance()->add_event( 'shutdown' );
+
 			HM_Time_Stack::instance()->end_operation( 'wp' );
 			
 			//HM_Time_Stack::instance()->printStack();
