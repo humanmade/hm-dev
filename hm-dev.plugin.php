@@ -36,3 +36,6 @@ include_once( HM_DEV_PATH . 'hm-dev.wp-unit.php' );
 
 // Load the time stack
 include_once( HM_DEV_PATH . 'hm-dev.time-stack.php' );
+
+// Load the import, export commands
+include_once( HM_DEV_PATH . 'hm-dev.wp-cli.import.php' );

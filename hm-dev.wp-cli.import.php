@@ -34,7 +34,7 @@ class HMImportCommand extends WP_CLI_Command {
 				return;
 			}
 
-			shell_exec( sprintf( "ssh -f -L 3308:127.0.0.1:%s %s@%s sleep 600 >> logfile", $args['port'], $args['ssh_user'], $args['ssh_host'] ) );
+			WP_CLI::launch( sprintf( "ssh -f -L 3308:127.0.0.1:%s %s@%s sleep 600 >> logfile", $args['port'], $args['ssh_user'], $args['ssh_host'] ) );
 			$args['host'] = '127.0.0.1';
 			$args['port'] = '3308';
 		}
@@ -48,7 +48,7 @@ class HMImportCommand extends WP_CLI_Command {
 		$exec = sprintf( 'mysqldump --verbose --host=%s --user=%s %s -P %s %s | mysql --host=%s --user=%s --password=%s %s',
 			$args['host'], $args['user'], $password, $args['port'], $args['name'], DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
 
-		exec( $exec );
+		WP_CLI::launch( $exec );
 
 		WP_CLI::success( sprintf( 'Finished. Took %d seconds', time() - $start_time ) );
 
@@ -102,9 +102,8 @@ class HMImportCommand extends WP_CLI_Command {
 
 		WP_CLI::line( sprintf( 'Running rsync from %s:%s to %s', $args['ssh_host'], $args['remote_path'], $args['local_path'] ) );
 
-		$res = exec( $exec );
+		WP_CLI::launch( $exec );
 
-		WP_CLI::line( $res );
 	}
 
 	/**
