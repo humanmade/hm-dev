@@ -2,8 +2,9 @@
 
 /*
 Plugin Name: HM Dev
+Description: Code like a poet
 Author: Human Made Limited
-Version: 1.1
+Version: 1.2
 */
 
 define( 'HM_DEV_SLUG', 'hm-dev' );
