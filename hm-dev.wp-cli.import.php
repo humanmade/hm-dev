@@ -12,7 +12,6 @@ class HMImportCommand extends WP_CLI_Command {
 		if ( count( $command ) == 1 && reset( $command ) == 'help' )
 			return $this->db_help();
 
-
 		$defaults = array(
 			'host' 		=> defined( 'IMPORT_DB_HOST' ) ? IMPORT_DB_HOST : DB_HOST,
 			'user'		=> defined( 'IMPORT_DB_USER' ) ? IMPORT_DB_USER : DB_USER,
@@ -28,13 +27,7 @@ class HMImportCommand extends WP_CLI_Command {
 		$start_time = time();
 
 		if ( $args['ssh_host'] ) {
-
-			if ( ! in_array( $args['host'], array( '127.0.0.1', 'localhost' ) ) ) {
-				WP_CLI::error( 'Connecting to MySQL over SSH currently is only supported 127.0.0.1 for the remote server.' );
-				return;
-			}
-
-			WP_CLI::launch( sprintf( "ssh -f -L 3308:127.0.0.1:%s %s@%s sleep 600 >> logfile", $args['port'], $args['ssh_user'], $args['ssh_host'] ) );
+			shell_exec( sprintf( "ssh -f -L 3308:%s:%s %s@%s sleep 600 >> logfile", $args['host'], $args['port'], $args['ssh_user'], $args['ssh_host'] ) );
 			$args['host'] = '127.0.0.1';
 			$args['port'] = '3308';
 		}
@@ -46,7 +39,7 @@ class HMImportCommand extends WP_CLI_Command {
 		// TODO pipe through sed
 
 		$exec = sprintf( 'mysqldump --verbose --host=%s --user=%s %s -P %s %s | mysql --host=%s --user=%s --password=%s %s',
-			$args['host'], $args['user'], $password, $args['port'], $args['name'], DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+		$args['host'], $args['user'], $password, $args['port'], $args['name'], DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
 
 		WP_CLI::launch( $exec );
 
@@ -111,7 +104,7 @@ class HMImportCommand extends WP_CLI_Command {
 	 */
 	public function help() {
 		WP_CLI::line( <<<EOB
-wp import db            Import a database from a local or remote server. Supports connecting via SSH. "wp import db help" for details.
+wp import db			Import a database from a local or remote server. Supports connecting via SSH. "wp import db help" for details.
 wp import uploads		Rsync uploads from a remote server. "wp import uploads help" for details.
 EOB
 		);
@@ -119,12 +112,11 @@ EOB
 
 	private function db_help() {
 		WP_CLI::line( <<<EOB
---host             			Specify the MySQL hostname. Define IMPORT_DB_HOST for default.
+--host					Specify the MySQL hostname. Define IMPORT_DB_HOST for default.
 --user					Specify the MySQL user. Define IMPORT_DB_USER for default.
 --password				Specify the MySQL password. Define IMPORT_DB_PASSWORD for default.
 --port					Specify the MySQL port (default: 3306).
 --ssh_host				Optionaly tunnel to a remote host via SSH. You must have pulibkey access to use this option. Define IMPORT_DB_SSH_HOST for default.
-					This options is currently only supported with --host=127.0.0.1.
 --ssh_user				Specify the username for the SSH connection. Define IMPORT_DB_SSH_USER for default.
 EOB
 		);
@@ -132,8 +124,8 @@ EOB
 
 	private function uploads_help() {
 		WP_CLI::line( <<<EOB
---ssh_host			Specify the SSH server. Define IMPORT_UPLOADS_SSH_HOST for default.
---ssh_user			Specify the username for the SSH connection. Define IMPORT_UPLOADS_SSH_USER for default.
+--ssh_host				Specify the SSH server. Define IMPORT_UPLOADS_SSH_HOST for default.
+--ssh_user				Specify the username for the SSH connection. Define IMPORT_UPLOADS_SSH_USER for default.
 --remote_path			Specify the remote path on the server to the uploads base directory. Define IMPORT_UPLOADS_REMOTE_PATH for default.
 --uploads_dir			Optionally set the uploads sub directory to sync (e.g. "2011").
 EOB
