@@ -7,8 +7,8 @@ Version: 1.1
 */
 
 define( 'HM_DEV_SLUG', 'hm-dev' );
-define( 'HM_DEV_PATH', realpath( dirname( __FILE__ ) ) . '/' );
-define( 'HM_DEV_URL', plugins_url( HM_DEV_SLUG ) );
+define( 'HM_DEV_PATH', plugin_dir_path( __FILE__ ) );
+define( 'HM_DEV_URL', plugin_dir_url( __FILE__ ) );
 
 // Load the debug bar
 include_once( HM_DEV_PATH . 'debug-bar/debug-bar.php' );
