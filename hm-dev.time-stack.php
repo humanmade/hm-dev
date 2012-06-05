@@ -133,6 +133,13 @@ class HM_Time_Stack {
 			HM_Time_Stack::instance()->add_event( $id, $label );
 		
 		}, 10, 1 );
+
+		add_action( 'log', function( $data ) {
+			if ( is_scalar( $data ) )
+				do_action( 'add_event', $data );
+			else
+				do_action( 'add_event', print_r( $data, true ) );
+		} );
 		
 		add_action( 'init', function() {
 			HM_Time_Stack::instance()->add_event( 'init' );
@@ -262,6 +269,10 @@ class HM_Time_Stack_Operation {
 		$this->children = array();
 		$this->id = $id;
 		$this->start_time = hm_time_stack_time();
+
+		if ( $id !== 'wp' )
+			$this->time = round( hm_time_stack_time() - HM_Time_Stack::instance()->get_start_time(), 3 );
+
 		$this->label = $label;
 		$this->is_open = true;
 		$this->start_memory_usage = memory_get_peak_usage();
@@ -366,6 +377,7 @@ class HM_Time_Stack_Operation {
 		$archive->memory_usage	= $this->peak_memory_usage;
 		$archive->label			= $this->label ? $this->label : $this->id;
 		$archive->vars			= $this->vars;
+		$archive->time 			= $this->time;
 		
 		foreach ( $this->children as $operation )
 			$archive->children[] = $operation->archive();
