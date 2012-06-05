@@ -2,13 +2,14 @@
 
 /*
 Plugin Name: HM Dev
+Description: Code like a poet
 Author: Human Made Limited
-Version: 1.1
+Version: 1.2
 */
 
 define( 'HM_DEV_SLUG', 'hm-dev' );
-define( 'HM_DEV_PATH', realpath( dirname( __FILE__ ) ) . '/' );
-define( 'HM_DEV_URL', plugins_url( HM_DEV_SLUG ) );
+define( 'HM_DEV_PATH', plugin_dir_path( __FILE__ ) );
+define( 'HM_DEV_URL', plugin_dir_url( __FILE__ ) );
 
 // Load the debug bar
 include_once( HM_DEV_PATH . 'debug-bar/debug-bar.php' );
@@ -36,3 +37,6 @@ include_once( HM_DEV_PATH . 'hm-dev.wp-unit.php' );
 
 // Load the time stack
 include_once( HM_DEV_PATH . 'hm-dev.time-stack.php' );
+
+// Load the import, export commands
+include_once( HM_DEV_PATH . 'hm-dev.wp-cli.import.php' );
