@@ -20,6 +20,7 @@ class HMImportCommand extends WP_CLI_Command {
 			'port'		=> '3306',
 			'ssh_host'	=> defined( 'IMPORT_DB_SSH_HOST' ) ? IMPORT_DB_SSH_HOST : '',
 			'ssh_user'	=> defined( 'IMPORT_DB_SSH_USER' ) ? IMPORT_DB_SSH_USER : '',
+			'table'		=> ''
 		);
 
 		$args = wp_parse_args( $args, $defaults );
@@ -37,11 +38,31 @@ class HMImportCommand extends WP_CLI_Command {
 		$password = $args['password'] ? '--password=' . $args['password'] : '';
 
 		// TODO pipe through sed
+		if ( defined( 'IMPORT_DB_REMOTE_ABSPATH' ) )0
+			$sed = " | sed s," . trailingslashit( IMPORT_DB_REMOTE_ABSPATH ) . "," . ABSPATH . ",g";
+		else
+			$sed = '';
 
-		$exec = sprintf( 'mysqldump --verbose --host=%s --user=%s %s -P %s %s | mysql --host=%s --user=%s --password=%s %s',
-		$args['host'], $args['user'], $password, $args['port'], $args['name'], DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+		$exec = sprintf( 
+			'mysqldump --verbose --host=%s --user=%s %s -P %s %s %s %s | mysql --host=%s --user=%s --password=%s %s',
+			$args['host'], 
+			$args['user'], 
+			$password, 
+			$args['port'], 
+			$args['name'],
+			$args['table'],
+			$sed,
+			DB_HOST, 
+			DB_USER,
+			DB_PASSWORD,
+			DB_NAME 
+		);
+
+		WP_CLI::line( 'Running: ' . $exec );
+
 
 		WP_CLI::launch( $exec );
+
 
 		WP_CLI::success( sprintf( 'Finished. Took %d seconds', time() - $start_time ) );
 
@@ -94,7 +115,7 @@ class HMImportCommand extends WP_CLI_Command {
 		$exec = sprintf( "rsync -avz -e ssh %s@%s:%s %s --exclude 'cache' --exclude '_wpremote_backups'", $args['ssh_user'], $args['ssh_host'], $args['remote_path'], $args['local_path'] );
 
 		WP_CLI::line( sprintf( 'Running rsync from %s:%s to %s', $args['ssh_host'], $args['remote_path'], $args['local_path'] ) );
-
+		var_dump( WP_CLI );
 		WP_CLI::launch( $exec );
 
 	}
