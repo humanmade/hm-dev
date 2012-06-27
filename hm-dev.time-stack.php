@@ -263,6 +263,7 @@ class HM_Time_Stack_Operation {
 	public $end_query_count;
 	public $query_count;
 	public $vars;
+	public $time;
 
 	public function __construct( $id, $label = '' ) {
 	
