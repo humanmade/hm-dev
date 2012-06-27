@@ -91,7 +91,7 @@ class Galahad_Query_Tracer
 					$functionChain[] = (isset($call['class']) ? "{$call['class']}::" : '') . $call['function'];
 					
 					// We've got a plugin
-					if (false !== strpos($call['file'], $pluginsPath)) {
+					if ( isset($call['file']) && false !== strpos($call['file'], $pluginsPath)) {
 						list($root) = explode('/', plugin_basename($call['file']), 2);
 						$file = str_replace($pluginsPath, '', $call['file']);
 						
