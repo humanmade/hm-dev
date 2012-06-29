@@ -38,7 +38,7 @@ class HMImportCommand extends WP_CLI_Command {
 		$password = $args['password'] ? '--password=' . $args['password'] : '';
 
 		// TODO pipe through sed
-		if ( defined( 'IMPORT_DB_REMOTE_ABSPATH' ) )0
+		if ( defined( 'IMPORT_DB_REMOTE_ABSPATH' ) )
 			$sed = " | sed s," . trailingslashit( IMPORT_DB_REMOTE_ABSPATH ) . "," . ABSPATH . ",g";
 		else
 			$sed = '';
