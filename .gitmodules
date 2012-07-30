@@ -1,3 +1,6 @@
 [submodule "wp-unit"]
 	path = wp-unit
 	url = https://github.com/humanmade/wp-unit
+[submodule "timestack"]
+	path = timestack
+	url = git://github.com/joehoyle/Time-Stack-Plugin.git

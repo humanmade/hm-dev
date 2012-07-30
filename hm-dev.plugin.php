@@ -36,7 +36,8 @@ add_action( 'debug_bar_enqueue_scripts', function() {
 include_once( HM_DEV_PATH . 'hm-dev.wp-unit.php' );
 
 // Load the time stack
-include_once( HM_DEV_PATH . 'hm-dev.time-stack.php' );
+if ( file_exists( HM_DEV_PATH . 'timestack/time-stack.php' ) && ! class_exists( 'HM_Time_Stack' ) )
+	include_once( HM_DEV_PATH . 'timestack/time-stack.php' );
 
 // Load the import, export commands
 include_once( HM_DEV_PATH . 'hm-dev.wp-cli.import.php' );
