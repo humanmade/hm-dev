@@ -6,6 +6,10 @@ Various things to assist with the development of kick ass WordPress Sites & Apps
 
 ## Componants
 
+### DEV •
+
+Prepends "Dev • " to the site <title /> and admin bar site name menu.
+
 ### Debug functions
 
 Our better `var_dump` / `print_r` and others.
