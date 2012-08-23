@@ -8,13 +8,13 @@ Various things to assist with the development of kick ass WordPress Sites & Apps
 
 ### Debug functions
 
-Our better `var_dump` / `print_r`.
+Our better `var_dump` / `print_r` and others.
 
 ````
 hm( $foo );
 ````
 
-### WP CLI import and export commands
+### WP CLI `import` command
 
 Add import and export commands to wp-cli to allow easy synching of database and uploads between your local server and the production server.
 
@@ -25,11 +25,26 @@ $ wp import uploads --import-dir="uploads/2012"
 $ wp import db
 ````
 
+To get those commands to work add the following `define`'s to your `wp-config.php` file.
+
+````
+define( 'IMPORT_DB_HOST', 'database_hostname' );
+define( 'IMPORT_DB_USER', 'database_user_name' );
+define( 'IMPORT_DB_NAME', 'database_name' );
+define( 'IMPORT_DB_PASSWORD', 'database_password' );
+
+define( 'IMPORT_UPLOADS_SSH_HOST', 'ssh_hostname' );
+define( 'IMPORT_UPLOADS_SSH_USER', 'ssh_username' );
+define( 'IMPORT_UPLOADS_REMOTE_PATH', 'remote_path_to_uploads_dir' );
+````
+
 ### WP Unit
 
 Submodules in our fork of WP Unit (originally from https://github.com/nunomorgadinho/wp-unit).
 
-### WP CLI WP Unit test command
+UNIT TEST ALL THE THINGS
+
+### WP CLI WP Unit `test` command
 
 Adds support for running WP Unit tests using WP CLI
 
