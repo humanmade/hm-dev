@@ -14,6 +14,22 @@ Our better `var_dump` / `print_r` and others.
 hm( $foo );
 ````
 
+### Safe Email
+
+All email sent using `wp_mail` is redirected to whatever is defined as `HM_DEV_EMAIL`, default is `dev@hmn.md`.
+
+You can override by the email messages are redirected to by adding the following line to your `wp-config.php`:
+
+````
+define( 'HM_DEV_EMAIL', 'email_goes_here' );
+````
+
+If you want to disable the redirect and allow all email to go it the original recipients then add the following to your `wp-config.php` file:
+
+````
+define( 'HM_DEV_EMAIL', false );
+````
+
 ### WP CLI `import` command
 
 Add import and export commands to wp-cli to allow easy synching of database and uploads between your local server and the production server.
