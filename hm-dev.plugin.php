@@ -11,6 +11,8 @@ define( 'HM_DEV_SLUG', 'hm-dev' );
 define( 'HM_DEV_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HM_DEV_URL', plugin_dir_url( __FILE__ ) );
 
+include_once( HM_DEV_PATH . 'hm-dev.debug.php' );
+
 // Load the debug bar
 include_once( HM_DEV_PATH . 'debug-bar/debug-bar.php' );
 include_once( HM_DEV_PATH . 'debug-bar-console/debug-bar-console.php' );
