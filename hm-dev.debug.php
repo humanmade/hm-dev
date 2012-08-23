@@ -3,7 +3,6 @@
 /**
  * Intelligently replacement for print_r & var_dump.
  *
- * @access public
  * @param mixed $code
  * @param bool $output. (default: true)
  * @return $code
@@ -23,7 +22,7 @@ function hm( $code, $output = true ) {
 	<?php endif;
 
 	// var_dump everything except arrays and objects
-	if ( !is_array( $code ) && !is_object( $code ) ) :
+	if ( ! is_array( $code ) && ! is_object( $code ) ) :
 
 		if ( $output )
 			var_dump( $code );
@@ -51,50 +50,37 @@ function hm_backtrace( $limit = 0 ) {
 
 	$new = array();
 	$backtrace = debug_backtrace();
-	
+
 	array_shift( $backtrace );
-	
+
 	foreach( $backtrace as $num => $val ) {
-		
-		if( $val['function'] == 'do_action' )
+
+		if ( $val['function'] == 'do_action' )
 			$new[$num] = reset( $val['args'] ) . ' (via do_action)';
-		
+
 		else
 			$new[$num] = array( 'function' => $val['function'] );
-	
-		if( !empty( $val['line'] ) )
+
+		if ( ! empty( $val['line'] ) )
 			$new[$num]['line'] = $val['line'];
-	
-		if( !empty( $val['file'] ) )
+
+		if ( ! empty( $val['file'] ) )
 			$new[$num]['file'] = $val['file'];
-			
-		if( !empty( $val['class'] ) )
+
+		if ( !empty( $val['class'] ) )
 			$new[$num]['class'] = $val['class'];
+
 	}
-	
-	hm($new);
+
+	hm( $new );
+
 }
 
 /**
  * Intelligently error_log the passed var.
  *
- * @access public
  * @param mixed $code
- * @return null
  */
 function hm_log( $code ) {
 	error_log( hm( $code, false ) );
-}
-
-/**
- * Javascript alert.
- *
- * @access public
- * @param mixed $code
- * @return void
- */
-function hm_alert( $code ) {
-	echo '<script type="text/javascript"> alert("';
-	hm_debug( $code );
-	echo '")</script>';
 }
