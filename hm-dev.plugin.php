@@ -12,6 +12,7 @@ define( 'HM_DEV_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HM_DEV_URL', plugin_dir_url( __FILE__ ) );
 
 include_once( HM_DEV_PATH . 'hm-dev.debug.php' );
+include_once( HM_DEV_PATH . 'hm-dev.mail.php' );
 
 // Load the unit tests
 include_once( HM_DEV_PATH . 'hm-dev.wp-unit.php' );
