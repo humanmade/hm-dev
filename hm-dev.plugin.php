@@ -4,7 +4,7 @@
 Plugin Name: HM Dev
 Description: Code like a poet
 Author: Human Made Limited
-Version: 1.2
+Version: 1.3
 */
 
 define( 'HM_DEV_PATH', plugin_dir_path( __FILE__ ) );
