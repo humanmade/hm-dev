@@ -7,7 +7,6 @@ Author: Human Made Limited
 Version: 1.2
 */
 
-define( 'HM_DEV_SLUG', 'hm-dev' );
 define( 'HM_DEV_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HM_DEV_URL', plugin_dir_url( __FILE__ ) );
 
