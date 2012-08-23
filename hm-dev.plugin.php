@@ -13,27 +13,6 @@ define( 'HM_DEV_URL', plugin_dir_url( __FILE__ ) );
 
 include_once( HM_DEV_PATH . 'hm-dev.debug.php' );
 
-// Load the debug bar
-include_once( HM_DEV_PATH . 'debug-bar/debug-bar.php' );
-include_once( HM_DEV_PATH . 'debug-bar-console/debug-bar-console.php' );
-include_once( HM_DEV_PATH . 'debug-bar-extender/debug-bar-extender.php' );
-include_once( HM_DEV_PATH . 'debug-bar-query-tracer/galahad-query-tracer.php' );
-
-// Re-enqueue the scripts and styles so they work in a sub directory
-add_action( 'debug_bar_enqueue_scripts', function() {
-
-	wp_deregister_script( 'debug-bar' );
-	wp_deregister_style( 'debug-bar' );
-	wp_deregister_script( 'debug-bar-console' );
-	wp_deregister_style( 'debug-bar-console' );
-
-	wp_enqueue_style( 'debug-bar', HM_DEV_URL . "/debug-bar/css/debug-bar.css", array(), '20111209' );
-	wp_enqueue_script( 'debug-bar', HM_DEV_URL . "/debug-bar/js/debug-bar.js", array( 'jquery' ), '20111209', true );
-	wp_enqueue_style( 'debug-bar-console', HM_DEV_URL . "/debug-bar-console/css/debug-bar-console.css", array(), '20111209' );
-	wp_enqueue_script( 'debug-bar-console', HM_DEV_URL . "/debug-bar-console/js/debug-bar-console.js", array( 'jquery' ), '20111209', true );
-
-}, 1 );
-
 // Load the unit tests
 include_once( HM_DEV_PATH . 'hm-dev.wp-unit.php' );
 
