@@ -8,7 +8,7 @@ Various things to assist with the development of kick ass WordPress Sites & Apps
 
 ### DEV •
 
-Prepends "Dev • " to the site <title /> and admin bar site name menu.
+Prepends "Dev • " to the site `<title />` and admin bar site name menu.
 
 ### Debug functions
 
