@@ -24,6 +24,9 @@ class WPUnitCommand extends WP_CLI_Command {
 
 	public function show( $args = array() ) {
 
+		if ( ! $this->test_for_phpunit() )
+			return;
+
 		$files = wptest_get_all_test_files( DIR_TESTCASE );
 
 		foreach ( $files as $file ) {
@@ -48,6 +51,9 @@ class WPUnitCommand extends WP_CLI_Command {
 	}
 
 	public function run( $args = array(), $assoc_args = array() ) {
+
+		if ( ! $this->test_for_phpunit() )
+			return;
 
 		$test = isset( $args[0] ) ? $args[0] : null;
 
@@ -122,8 +128,22 @@ class WPUnitCommand extends WP_CLI_Command {
 
 	}
 
-}
+	private function test_for_phpunit() {
 
+		if ( ! file_exists( 'PHPUnit/Autoload.php' ) ) {
+
+			WP_CLI::line( '%RPHPUnit not found%n, you need to install PHPUnit to use the test command, see https://github.com/humanmade/hm-dev' );
+
+			return false;
+
+		}
+
+		return true;
+
+	}
+
+}
+if ( class_exists( 'PHPUnit_TextUI_ResultPrinter' ) ) :
 class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implements PHPUnit_Framework_TestListener {
 
 	var $failed_tests;
@@ -210,4 +230,5 @@ class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implement
     }
 
 }
+endif;
 endif;

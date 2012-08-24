@@ -64,6 +64,13 @@ Submodules in our fork of WP Unit (originally from https://github.com/nunomorgad
 
 UNIT TEST ALL THE THINGS
 
+WP Unit requires the PHPUnit PEAR module to be installed.
+
+````
+$ pear config-set auto_discover 1
+$ pear install pear.phpunit.de/PHPUnit
+````
+
 ### WP CLI WP Unit `test` command
 
 Adds support for running WP Unit tests using WP CLI
