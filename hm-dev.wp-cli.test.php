@@ -130,9 +130,17 @@ class WPUnitCommand extends WP_CLI_Command {
 
 	private function test_for_phpunit() {
 
-		if ( ! file_exists( 'PHPUnit/Autoload.php' ) ) {
+		if ( ! file_exists( trailingslashit( substr( get_include_path(), 2 ) ) . 'PHPUnit/Autoload.php' ) ) {
 
 			WP_CLI::line( '%RPHPUnit not found%n, you need to install PHPUnit to use the test command, see https://github.com/humanmade/hm-dev' );
+
+			WP_CLI::line( 'Attempting to auto install PHPUnit...' );
+
+			WP_CLI::launch( 'pear config-set auto_discover 1' );
+			WP_CLI::launch( 'sudo pear install pear.phpunit.de/PHPUnit' );
+
+			if ( file_exists( trailingslashit( substr( get_include_path(), 2 ) ) . 'PHPUnit/Autoload.php' ) )
+				WP_CLI::line( '%GPHPUnit was auto installed%n, You\'ll need to run the command again.' );
 
 			return false;
 
