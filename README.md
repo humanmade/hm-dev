@@ -41,7 +41,7 @@ Add import and export commands to wp-cli to allow easy synching of database and 
 Knows about WP Thumb so won't import the `uploads/cache` dir.
 
 ````
-$ wp import uploads --import-dir="uploads/2012"
+$ wp import uploads --uploads_dir="2012"
 $ wp import db
 ````
 
