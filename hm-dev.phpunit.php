@@ -85,14 +85,10 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 	 */
 	function assertArchiveContains( $zip_file, $filepaths, $root = ABSPATH ) {
 
-		require_once( ABSPATH . 'wp-admin/includes/class-pclzip.php' );
+		$extracted = $this->pclzip_extract_as_string( $zip_file );
 
-		$archive = new PclZip( $zip_file );
-
-		$extracted = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING );
-		
 		$files = array();
-		
+
 		foreach( $filepaths as $filepath )
 			$filenames[] = str_ireplace( $root, '', $filepath );
 
@@ -115,12 +111,8 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 	 */
 	function assertArchiveNotContains( $zip_file, $filenames ) {
 
-		require_once( ABSPATH . 'wp-admin/includes/class-pclzip.php' );
+		$extracted = $this->pclzip_extract_as_string( $zip_file );
 
-		$archive = new PclZip( $zip_file );
-
-		$extracted = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING );
-		
 		$files = array();
 
 		foreach( $extracted as $fileInfo )
@@ -142,14 +134,7 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 	 */
 	function assertArchiveFileCount( $zip_file, $file_count ) {
 
-		require_once( ABSPATH . 'wp-admin/includes/class-pclzip.php' );
-
-		$archive = new PclZip( $zip_file );
-
-		$extracted = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING );
-		
-		//if ( count( $extracted ) != $file_count )
-		//	var_dump( $extracted );
+		$extracted = $this->pclzip_extract_as_string( $zip_file );
 
 		$this->assertEquals( count( array_filter( (array) $extracted ) ), $file_count );
 
@@ -243,6 +228,26 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		}
 
 		$GLOBALS['wp']->main($parts['query']);
+	}
+
+	private function pclzip_extract_as_string( $zip_file ) {
+
+		require_once( ABSPATH . 'wp-admin/includes/class-pclzip.php' );
+
+ 	 	if ( ini_get( 'mbstring.func_overload' ) && function_exists( 'mb_internal_encoding' ) ) {
+ 	 	    $previous_encoding = mb_internal_encoding();
+ 	 	 	mb_internal_encoding( 'ISO-8859-1' );
+ 	 	}
+
+		$archive = new PclZip( $zip_file );
+
+		$extracted = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING );
+
+		if ( isset( $previous_encoding ) )
+			mb_internal_encoding( $previous_encoding );
+
+		return $extracted ?: array();
+
 	}
 
 }
