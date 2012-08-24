@@ -1,6 +1,14 @@
 <?php
 
 if ( class_exists( 'WP_CLI_Command' ) ) :
+
+/**
+ * Add the import command to WP CLI.
+ *
+ * Adds easy synching of db and uploads between dev and production
+ *
+ * @extends WP_CLI_Command
+ */
 class HMImportCommand extends WP_CLI_Command {
 
 	public static function get_description() {
@@ -37,32 +45,30 @@ class HMImportCommand extends WP_CLI_Command {
 
 		$password = $args['password'] ? '--password=' . $args['password'] : '';
 
-		// TODO pipe through sed
+		// TODO pipe through sed or interconnectIT's search replace script
 		if ( defined( 'IMPORT_DB_REMOTE_ABSPATH' ) )
 			$sed = " | sed s," . trailingslashit( IMPORT_DB_REMOTE_ABSPATH ) . "," . ABSPATH . ",g";
 		else
 			$sed = '';
 
-		$exec = sprintf( 
+		$exec = sprintf(
 			'mysqldump --verbose --host=%s --user=%s %s -P %s %s %s %s | mysql --host=%s --user=%s --password=%s %s',
-			$args['host'], 
-			$args['user'], 
-			$password, 
-			$args['port'], 
+			$args['host'],
+			$args['user'],
+			$password,
+			$args['port'],
 			$args['name'],
 			$args['table'],
 			$sed,
-			DB_HOST, 
+			DB_HOST,
 			DB_USER,
 			DB_PASSWORD,
-			DB_NAME 
+			DB_NAME
 		);
 
 		WP_CLI::line( 'Running: ' . $exec );
 
-
 		WP_CLI::launch( $exec );
-
 
 		WP_CLI::success( sprintf( 'Finished. Took %d seconds', time() - $start_time ) );
 
@@ -112,11 +118,9 @@ class HMImportCommand extends WP_CLI_Command {
 			return;
 		}
 
-		$exec = sprintf( "rsync -avz -e ssh %s@%s:%s %s --exclude 'cache' --exclude '_wpremote_backups'", $args['ssh_user'], $args['ssh_host'], $args['remote_path'], $args['local_path'] );
-
 		WP_CLI::line( sprintf( 'Running rsync from %s:%s to %s', $args['ssh_host'], $args['remote_path'], $args['local_path'] ) );
-		var_dump( WP_CLI );
-		WP_CLI::launch( $exec );
+
+		WP_CLI::launch( sprintf( "rsync -avz -e ssh %s@%s:%s %s --exclude 'cache' --exclude '_wpremote_backups'", $args['ssh_user'], $args['ssh_host'], $args['remote_path'], $args['local_path'] ) );
 
 	}
 
@@ -154,5 +158,8 @@ EOB
 	}
 
 }
+
+// Register the import command
 WP_CLI::addCommand( 'import', 'HMImportCommand' );
+
 endif;
