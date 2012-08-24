@@ -27,19 +27,9 @@ class WPUnitCommand extends WP_CLI_Command {
 		if ( ! $this->test_for_phpunit() )
 			return;
 
-		$files = wptest_get_all_test_files( DIR_TESTCASE );
+		hmdev_phpunit_load_all_test_files();
 
-		foreach ( $files as $file ) {
-
-			// Skip example tests
-			if ( in_array( basename( $file ), array( 'MyTest.php', 'MyTestSecond.php' ) ) )
-				continue;
-
-			require_once( $file );
-
-		}
-
-		$tests = wptest_get_all_test_cases();
+		$tests = hmdev_phpunit_get_all_test_cases();
 
 		WP_CLI::line( '' );
 
@@ -57,26 +47,16 @@ class WPUnitCommand extends WP_CLI_Command {
 
 		$test = isset( $args[0] ) ? $args[0] : null;
 
-		$files = wptest_get_all_test_files( DIR_TESTCASE );
-
-		foreach ( $files as $file ) {
-
-			// Skip the example tests
-			if ( in_array( basename( $file ), array( 'MyTest.php', 'MyTestSecond.php' ) ) )
-				continue;
-
-			require_once( $file );
-
-		}
+		hmdev_phpunit_load_all_test_files();
 
 		if ( empty( $test ) ) {
-			$this->testCases = wptest_get_all_test_cases();
+			$this->testCases = hmdev_phpunit_get_all_test_cases();
 
 		} else {
 
 			if ( strpos( $test, '*' ) ) {
 
-				foreach ( wptest_get_all_test_cases() as $_test )
+				foreach ( hmdev_phpunit_get_all_test_cases() as $_test )
 					if ( preg_match( '/' . str_replace( '*', '([.]*?)', $test ) . '/', $_test ) )
 						$this->testCases[] = $_test;
 

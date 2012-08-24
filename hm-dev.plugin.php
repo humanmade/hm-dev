@@ -14,7 +14,8 @@ require_once( HM_DEV_PATH . 'hm-dev.debug.php' );
 require_once( HM_DEV_PATH . 'hm-dev.mail.php' );
 
 // Load the unit tests
-require_once( HM_DEV_PATH . 'wp-unit/wp-unit.plugin.php' );
+//require_once( HM_DEV_PATH . 'wp-unit/wp-unit.plugin.php' );
+require_once( HM_DEV_PATH . 'hm-dev.phpunit.php' );
 require_once( HM_DEV_PATH . 'hm-dev.wp-cli.test.php' );
 
 // Load the time stack
