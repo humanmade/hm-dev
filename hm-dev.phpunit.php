@@ -1,5 +1,8 @@
 <?php
 
+if ( ! file_exists( 'PHPUnit/Autoload.php' ) )
+	return;
+
 require_once('PHPUnit/Autoload.php');
 
 class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
@@ -13,7 +16,7 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		$wpdb->show_errors = true;
 		$wpdb->db_connect();
 		ini_set('display_errors', 1 );
-		
+
 		$this->start_transaction();
 		add_filter( 'gp_get_option_uri', array( $this, 'url_filter') );
 		$this->activate_tested_plugin();
@@ -47,12 +50,12 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		$_GET = array();
 		$_POST = array();
 	}
-	
+
 	function start_transaction() {
 		global $wpdb;
 		$wpdb->query( 'SET autocommit = 0;' );
 		$wpdb->query( 'SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;' );
-		$wpdb->query( 'START TRANSACTION;' );		
+		$wpdb->query( 'START TRANSACTION;' );
 	}
 
 	function force_innodb( $schema ) {
@@ -61,11 +64,11 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		}
 		return $schema;
 	}
-	
+
 	function assertWPError( $actual, $message = '' ) {
 		$this->assertTrue( is_wp_error( $actual ), $message );
 	}
-	
+
 	function assertEqualFields( $object, $fields ) {
 		foreach( $fields as $field_name => $field_value ) {
 			if ( $object->$field_name != $field_value ) {
@@ -73,11 +76,11 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 			}
 		}
 	}
-	
+
 	/**
 	 * Assert that a zip archive contains the array
 	 * of filenames
-	 * 
+	 *
 	 * @access public
 	 * @param string path to zip file
 	 * @param array of filenames to check for
@@ -85,14 +88,10 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 	 */
 	function assertArchiveContains( $zip_file, $filepaths, $root = ABSPATH ) {
 
-		require_once( ABSPATH . 'wp-admin/includes/class-pclzip.php' );
+		$extracted = $this->pclzip_extract_as_string( $zip_file );
 
-		$archive = new PclZip( $zip_file );
-
-		$extracted = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING );
-		
 		$files = array();
-		
+
 		foreach( $filepaths as $filepath )
 			$filenames[] = str_ireplace( $root, '', $filepath );
 
@@ -103,11 +102,11 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 			$this->assertContains( untrailingslashit( $filename ), $files );
 
 	}
-	
+
 	/**
 	 * Assert that a zip archive doesn't contain any of the files
 	 * in the array of filenames
-	 * 
+	 *
 	 * @access public
 	 * @param string path to zip file
 	 * @param array of filenames to check for
@@ -115,12 +114,8 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 	 */
 	function assertArchiveNotContains( $zip_file, $filenames ) {
 
-		require_once( ABSPATH . 'wp-admin/includes/class-pclzip.php' );
+		$extracted = $this->pclzip_extract_as_string( $zip_file );
 
-		$archive = new PclZip( $zip_file );
-
-		$extracted = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING );
-		
 		$files = array();
 
 		foreach( $extracted as $fileInfo )
@@ -130,11 +125,11 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 			$this->assertNotContains( $filename, $files );
 
 	}
-	
+
 	/**
-	 * Assert that a zip archive contains the 
+	 * Assert that a zip archive contains the
 	 * correct number of files
-	 * 
+	 *
 	 * @access public
 	 * @param string path to zip file
 	 * @param int the number of files the archive should contain
@@ -142,56 +137,49 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 	 */
 	function assertArchiveFileCount( $zip_file, $file_count ) {
 
-		require_once( ABSPATH . 'wp-admin/includes/class-pclzip.php' );
-
-		$archive = new PclZip( $zip_file );
-
-		$extracted = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING );
-		
-		//if ( count( $extracted ) != $file_count )
-		//	var_dump( $extracted );
+		$extracted = $this->pclzip_extract_as_string( $zip_file );
 
 		$this->assertEquals( count( array_filter( (array) $extracted ) ), $file_count );
 
 	}
-	
+
 	function assertURL( $url, $message = '' ) {
-	
+
 		$this->assertStringStartsWith( 'http', $url, $message );
-		
+
 	}
-	
+
 	function assertURLReponseCode( $url, $code, $message = '' ) {
-	
+
 		$r = wp_remote_request( $url, array( 'timeout' => 30 ) );
 		$r_code = wp_remote_retrieve_response_code( $r );
 		$this->assertEquals( $code, $r_code );
 	}
-	
+
 	function assertURLContains( $url, $pattern, $message = '' ) {
-	
+
 		$r = wp_remote_request( $url, array( 'timeout' => 30 ) );
 		$body = wp_remote_retrieve_body( $r );
-		
-		
-		$this->assertContains( $pattern, $body, $message );	
+
+
+		$this->assertContains( $pattern, $body, $message );
 	}
-	
+
 	function assertDiscardWhitespace( $expected, $actual ) {
 		$this->assertEquals( preg_replace( '/\s*/', '', $expected ), preg_replace( '/\s*/', '', $actual ) );
 	}
-	
+
 	function assertImageColorAtPoint( $image_path, $point, $color ) {
-	
+
 	}
-	
+
 	function assertImageAlphaAtPoint( $image_path, $point, $alpha ) {
-		
+
 		$im = imagecreatefrompng( $image_path );
 		$rgb = imagecolorat($im, $point[0], $point[1]);
 
 		$colors = imagecolorsforindex($im, $rgb);
-		
+
 		$this->assertEquals( $colors['alpha'], $alpha );
 	}
 
@@ -245,6 +233,26 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		$GLOBALS['wp']->main($parts['query']);
 	}
 
+	private function pclzip_extract_as_string( $zip_file ) {
+
+		require_once( ABSPATH . 'wp-admin/includes/class-pclzip.php' );
+
+ 	 	if ( ini_get( 'mbstring.func_overload' ) && function_exists( 'mb_internal_encoding' ) ) {
+ 	 	    $previous_encoding = mb_internal_encoding();
+ 	 	 	mb_internal_encoding( 'ISO-8859-1' );
+ 	 	}
+
+		$archive = new PclZip( $zip_file );
+
+		$extracted = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING );
+
+		if ( isset( $previous_encoding ) )
+			mb_internal_encoding( $previous_encoding );
+
+		return $extracted ?: array();
+
+	}
+
 }
 
 function hmdev_phpunit_load_all_test_files() {
@@ -259,34 +267,34 @@ function hmdev_phpunit_load_all_test_files() {
 				foreach ($files as $file) {
 					require_once($file);
 				}
-			
+
 			}
 	} else {
 
 		$plugins = get_plugins();
-		
+
 		foreach( $plugins as $plugin_path => $plugin ) {
 			if( is_plugin_active( $plugin_path ) ) {
 				foreach( get_plugin_files( $plugin_path ) as $file )
 					if( strpos( $file, '/tests/' ) && end( explode( '.', $file) ) == 'php' )
 						include_once( WP_PLUGIN_DIR . '/' . $file );
 			}
-		
+
 		}
-		
+
 		if ( is_dir( get_template_directory() . '/tests/' ) ) {
-			
+
 			foreach ( glob( get_template_directory() . '/tests/*.php' ) as $file )
 				include_once( $file );
-				
+
 		}
 
 		if ( is_dir( WPMU_PLUGIN_DIR ) ) {
-			
+
 			foreach ( glob( WPMU_PLUGIN_DIR . '/*/tests/*.php' ) as $file ) {
 				include_once( $file );
 			}
-				
+
 		}
 
 	}
