@@ -1,5 +1,8 @@
 <?php
 
+if ( ! file_exists( 'PHPUnit/Autoload.php' ) )
+	return;
+
 require_once('PHPUnit/Autoload.php');
 
 class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
