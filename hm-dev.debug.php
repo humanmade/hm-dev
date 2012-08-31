@@ -82,5 +82,15 @@ function hm_backtrace( $limit = 0 ) {
  * @param mixed $code
  */
 function hm_log( $code ) {
-	error_log( hm( $code, false ) );
+
+	// var_dump everything except arrays and objects
+	if ( ! is_array( $code ) && ! is_object( $code ) ) :
+			error_log( var_export( $code, true ) );
+
+	else :
+
+			error_log( print_r( $code, true ) );
+	endif;
+
+	return $code;
 }
