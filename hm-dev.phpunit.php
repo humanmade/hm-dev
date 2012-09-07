@@ -1,6 +1,6 @@
 <?php
 
-if ( ! file_exists( 'PHPUnit/Autoload.php' ) )
+if ( ! file_exists( trailingslashit( substr( get_include_path(), 2 ) ) . 'PHPUnit/Autoload.php' ) )
 	return;
 
 require_once('PHPUnit/Autoload.php');
