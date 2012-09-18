@@ -93,7 +93,7 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		$files = array();
 
 		foreach( $filepaths as $filepath )
-			$filenames[] = str_ireplace( $root, '', $filepath );
+			$filenames[] = str_ireplace( trailingslashit( $root ), '', $filepath );
 
 		foreach( $extracted as $fileInfo )
 			$files[] = untrailingslashit( $fileInfo['filename'] );
