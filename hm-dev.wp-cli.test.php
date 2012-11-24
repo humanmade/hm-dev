@@ -1,9 +1,5 @@
 <?php
 
-// Add the command to the wp-cli
-if ( class_exists( 'WP_CLI' ) )
-	WP_CLI::addCommand( 'test', 'WPUnitCommand' );
-
 if ( class_exists( 'WP_CLI_Command' ) ) :
 
 /**
@@ -219,4 +215,8 @@ class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implement
 
 }
 endif;
+
+// Add the command to the wp-cli
+WP_CLI::addCommand( 'test', 'WPUnitCommand' );
+
 endif;
