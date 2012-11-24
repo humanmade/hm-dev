@@ -169,8 +169,14 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( preg_replace( '/\s*/', '', $expected ), preg_replace( '/\s*/', '', $actual ) );
 	}
 
-	function assertImageColorAtPoint( $image_path, $point, $color ) {
+	function assertImageRGBAtPoint( $image_path, $point, $color ) {
 
+		$im = imagecreatefrompng( $image_path );
+		$rgb = imagecolorat($im, $point[0], $point[1]);
+
+		$colors = imagecolorsforindex($im, $rgb);
+		$colors = array( $colors['red'], $colors['green'], $colors['blue'] );
+		$this->assertEquals( $colors, $color );
 	}
 
 	function assertImageAlphaAtPoint( $image_path, $point, $alpha ) {
