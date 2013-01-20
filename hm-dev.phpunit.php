@@ -1,6 +1,6 @@
 <?php
 
-if ( ! file_exists( trailingslashit( substr( get_include_path(), 2 ) ) . 'PHPUnit/Autoload.php' ) )
+if ( ! file_exists( trailingslashit( substr( get_include_path(), 2 ) ) . 'PHPUnit/Autoload.php' ) || class_exists( 'WP_UnitTestCase' ) )
 	return;
 
 require_once('PHPUnit/Autoload.php');
