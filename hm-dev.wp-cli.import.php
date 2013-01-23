@@ -43,7 +43,7 @@ class HMImportCommand extends WP_CLI_Command {
 
 		WP_CLI::line( 'Importing database from ' . $args['host'] . '...' . ( $args['ssh_host'] ? ' via ssh tunnel: ' . $args['ssh_host'] : '' ) );
 
-		$password = $args['password'] ? '--password=' . $args['password'] : '';
+		$password = $args['password'] ? '--password=' . escapeshellarg($args['password']) : '';
 
 		// TODO pipe through sed or interconnectIT's search replace script
 		if ( defined( 'IMPORT_DB_REMOTE_ABSPATH' ) )
@@ -62,7 +62,7 @@ class HMImportCommand extends WP_CLI_Command {
 			$sed,
 			DB_HOST,
 			DB_USER,
-			DB_PASSWORD,
+			escapeshellarg(DB_PASSWORD),
 			DB_NAME
 		);
 
