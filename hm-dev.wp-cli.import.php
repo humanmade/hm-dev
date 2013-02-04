@@ -51,6 +51,10 @@ class HMImportCommand extends WP_CLI_Command {
 		else
 			$sed = '';
 
+		if ( $args['site'] ) {
+			$args['table'] = "wp_{$args['site']}_commentmeta wp_{$args['site']}_comments wp_{$args['site']}_links wp_{$args['site']}_options wp_{$args['site']}_postmeta wp_{$args['site']}_posts wp_{$args['site']}_term_relationships wp_{$args['site']}_term_taxonomy wp_{$args['site']}_terms";
+		}
+
 		$exec = sprintf(
 			'mysqldump --verbose --host=%s --user=%s %s -P %s %s %s %s | mysql --host=%s --user=%s --password=%s %s',
 			$args['host'],
@@ -72,6 +76,7 @@ class HMImportCommand extends WP_CLI_Command {
 
 		WP_CLI::success( sprintf( 'Finished. Took %d seconds', time() - $start_time ) );
 
+		wp_cache_flush();
 	}
 
 	public function uploads( $command = array(), $args = array() ) {
