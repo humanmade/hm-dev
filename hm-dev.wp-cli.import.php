@@ -130,12 +130,30 @@ class HMImportCommand extends WP_CLI_Command {
 	}
 
 	/**
+	 * Import a specific site from wordpress multisite site
+	 * 
+	 * @todo add site to wp_blogs if it doesn't exist
+	 * @todo support site "nicename" instead of ID. Somehow.
+	 */
+	public function site( $command, $args ) {
+
+		$site = $command[0];
+
+		WP_CLI::line( 'Importing uploads' );
+
+		$this->uploads( array(), array( 'uploads_dir' => 'sites/' . $site ) );
+
+		$this->db( array(), array( 'site' => $site ) );
+	}
+
+	/**
 	 * Help function for this command
 	 */
 	public function help() {
 		WP_CLI::line( <<<EOB
 wp import db			Import a database from a local or remote server. Supports connecting via SSH. "wp import db help" for details.
 wp import uploads		Rsync uploads from a remote server. "wp import uploads help" for details.
+wp import site [id]		Import uploads and database from a single site on the remote multisite install
 EOB
 		);
 	}
