@@ -1,9 +1,7 @@
 <?php
 
-if ( ! file_exists( trailingslashit( substr( get_include_path(), 2 ) ) . 'PHPUnit/Autoload.php' ) )
+if ( ! @require_once('PHPUnit/Autoload.php') )
 	return;
-
-require_once('PHPUnit/Autoload.php');
 
 class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 

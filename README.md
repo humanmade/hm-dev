@@ -16,6 +16,7 @@ Our better `var_dump` / `print_r` and others.
 
 ````
 hm( $foo );
+hm_log( $foo );
 ````
 
 ### Safe Email
@@ -36,7 +37,7 @@ define( 'HM_DEV_EMAIL', false );
 
 ### WP CLI `import` command
 
-Add import and export commands to wp-cli to allow easy synching of database and uploads between your local server and the production server.
+Add a `import` command to wp-cli to allow easy synching of database and uploads between your local server and the production server.
 
 Knows about WP Thumb so won't import the `uploads/cache` dir.
 
@@ -45,7 +46,7 @@ $ wp import uploads --uploads_dir="2012"
 $ wp import db
 ````
 
-To get those commands to work add the following `define`'s to your `wp-config.php` file.
+To get those commands to work `define` the following in your `wp-config-local.php` file.
 
 ````
 define( 'IMPORT_DB_HOST', 'database_hostname' );
@@ -67,8 +68,8 @@ UNIT TEST ALL THE THINGS
 WP Unit requires the PHPUnit PEAR module to be installed.
 
 ````
-$ pear config-set auto_discover 1
-$ pear install pear.phpunit.de/PHPUnit
+$ sudo pear config-set auto_discover 1
+$ sudo pear install pear.phpunit.de/PHPUnit
 ````
 
 ### WP CLI WP Unit `test` command
