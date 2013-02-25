@@ -1,6 +1,6 @@
 <?php
 
-if ( ! @require_once('PHPUnit/Autoload.php') )
+if ( ! @include_once('PHPUnit/Autoload.php') )
 	return;
 
 class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
