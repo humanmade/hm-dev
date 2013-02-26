@@ -143,7 +143,30 @@ class HMImportCommand extends WP_CLI_Command {
 
 		$this->uploads( array(), array( 'uploads_dir' => 'sites/' . $site ) );
 
+		WP_CLI::line( 'Importing site tables' );
+
 		$this->db( array(), array( 'site' => $site ) );
+
+		// check if the site is in the blogs table
+		global $wpdb;
+
+		$details = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->blogs WHERE blog_id = %d", $site ) );
+
+		if ( ! $details ) {
+			
+			WP_CLI::line( 'Adding site to blogs table' );
+
+			$url = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM wp_%d_options WHERE option_name = 'siteurl'", $site ) );
+			$url = parse_url( $url );
+			$subdomain = reset( explode( '.', $url['host'] ) );
+
+			$row = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE blog_id = 1" );
+			$row->blog_id = $site;
+			$row->domain = $subdomain . '.' . $row->domain;
+
+			$wpdb->insert( $wpdb->blogs, (array) $row );
+		}
+
 	}
 
 	/**
