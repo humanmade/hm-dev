@@ -106,7 +106,7 @@ class WPUnitCommand extends WP_CLI_Command {
 
 	private function test_for_phpunit() {
 
-		if ( ! file_exists( trailingslashit( substr( get_include_path(), 2 ) ) . 'PHPUnit/Autoload.php' ) ) {
+		if ( ! @require_once( 'PHPUnit/Autoload.php' ) ) {
 
 			WP_CLI::line( '%RPHPUnit not found%n, you need to install PHPUnit to use the test command, see https://github.com/humanmade/hm-dev' );
 
