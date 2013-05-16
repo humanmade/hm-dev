@@ -206,6 +206,6 @@ EOB
 }
 
 // Register the import command
-WP_CLI::addCommand( 'import', 'HMImportCommand' );
+WP_CLI::add_command( 'import', 'HMImportCommand' );
 
 endif;

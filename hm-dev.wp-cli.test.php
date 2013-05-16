@@ -217,6 +217,6 @@ class WPUnitCommandResultsPrinter extends PHPUnit_TextUI_ResultPrinter implement
 endif;
 
 // Add the command to the wp-cli
-WP_CLI::addCommand( 'test', 'WPUnitCommand' );
+WP_CLI::add_command( 'test', 'WPUnitCommand' );
 
 endif;
