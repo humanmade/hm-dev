@@ -49,3 +49,23 @@ add_filter( 'admin_bar_menu', function() use ( $dev_title ) {
 	) );
 
 }, 31 );
+
+/**
+ * Add a nice red to the admin bar when we're in development mode
+ */
+function hm_dev_colorize() { ?>
+<style>
+
+	#wpadminbar {
+		border-top: 5px solid rgba(193, 39, 45, 1);
+	}
+
+	#wp-admin-bar-site-name > a {
+		background-color: rgba(193, 39, 45, 1);
+		color: #f1f1f1;
+	}
+
+</style>
+<?php }
+add_filter( 'admin_head', 'hm_dev_colorize' );
+add_filter( 'wp_head', 'hm_dev_colorize' );
