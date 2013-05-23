@@ -60,13 +60,9 @@ function hm_dev_colorize() {
 		border-top: 5px solid rgba(193, 39, 45, 1);
 	}
 
-	#wp-admin-bar-site-name a.ab-item {
+	#wp-admin-bar-site-name > a {
 		background-color: rgba(193, 39, 45, 1);
 		color: #f1f1f1;
-	}
-
-	#wp-admin-bar-site-name .ab-sub-wrapper a.ab-item {
-		background-color: #FFF;
 	}
 
 </style>
