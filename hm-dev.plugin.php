@@ -50,10 +50,10 @@ add_filter( 'admin_bar_menu', function() use ( $dev_title ) {
 
 }, 31 );
 
-add_filter( 'admin_head', 'hm_dev_colorize' );
-add_filter( 'wp_head', 'hm_dev_colorize' );
-function hm_dev_colorize() {
-?>
+/**
+ * Add a nice red to the admin bar when we're in development mode
+ */
+function hm_dev_colorize() { ?>
 <style>
 
 	#wpadminbar {
@@ -66,5 +66,6 @@ function hm_dev_colorize() {
 	}
 
 </style>
-<?php
-}
+<?php }
+add_filter( 'admin_head', 'hm_dev_colorize' );
+add_filter( 'wp_head', 'hm_dev_colorize' );
