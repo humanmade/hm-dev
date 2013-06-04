@@ -73,3 +73,16 @@ function hm_dev_colorize() { ?>
 <?php }
 add_filter( 'admin_head', 'hm_dev_colorize' );
 add_filter( 'wp_head', 'hm_dev_colorize' );
+
+/**
+ * Add HM-Dev Body Class
+ *
+ * Filter body class and add hm-dev
+ * 
+ * @param  array $classes
+ * @return array $classes
+ */
+function hm_dev_body_class( $classes ) {
+	return array_merge( $classes, array( 'hm-dev' ) );
+}
+add_filter( 'body_class', 'hm_dev_body_class' );
