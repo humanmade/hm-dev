@@ -56,9 +56,11 @@ add_filter( 'admin_bar_menu', function() use ( $dev_title ) {
 function hm_dev_colorize() { ?>
 <style>
 	
-	html.wp-toolbar { 
-		margin-top: 5px; 
-	}
+	<?php if ( is_admin_bar_showing() ) : ?>
+		html { 
+			padding-top: 5px; 
+		}
+	<?php endif; ?>
 
 	#wpadminbar {
 		border-top: 5px solid rgba(193, 39, 45, 1);
