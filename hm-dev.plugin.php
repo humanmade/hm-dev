@@ -64,6 +64,8 @@ function hm_dev_colorize() { ?>
 
 	#wpadminbar {
 		border-top: 5px solid rgba(193, 39, 45, 1);
+		-moz-box-sizing: content-box !important;
+		box-sizing: content-box !important;
 	}
 
 	#wp-admin-bar-site-name > a {
