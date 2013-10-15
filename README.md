@@ -85,3 +85,8 @@ $ wp test run exampleTestCase
 ### Timestack
 
 Submodules in the timestack plugin from https://github.com/joehoyle/Time-Stack-Plugin
+
+## Contribution guidelines ##
+
+see https://github.com/humanmade/hm-dev/blob/master/CONTRIBUTING.md
+
