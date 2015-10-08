@@ -4,7 +4,7 @@ Various things to assist with the development of kick ass WordPress Sites & Apps
 
 **This plugin should be activated on your site whilst you are developing it locally.**
 
-## Componants
+## Components
 
 ### DEV •
 
